@@ -30,20 +30,20 @@ final class FestivalBannerCell: UICollectionViewCell {
 
     private let badgeLabel = UILabel().then {
         $0.text = "📅  다가오는 지역축제"
-        $0.font = .systemFont(ofSize: 13, weight: .semibold)
+        $0.font = .paperlogy(.semiBold, size: 10)
         $0.textColor = .white
     }
 
     private let titleLabel = UILabel().then {
         $0.text = "축제 근처에 팝업을 열어볼까요?"
-        $0.font = .systemFont(ofSize: 21, weight: .bold)
+        $0.font = .paperlogy(.bold, size: 16)
         $0.textColor = .white
         $0.numberOfLines = 2
     }
 
     private let subtitleLabel = UILabel().then {
         $0.text = "축제 인근 빈 건물 구경가기"
-        $0.font = .systemFont(ofSize: 14, weight: .regular)
+        $0.font = .paperlogy(.regular, size: 10)
         $0.textColor = UIColor.white.withAlphaComponent(0.85)
     }
 
