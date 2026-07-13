@@ -6,6 +6,16 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		85E597033004CAC5009ADB48 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 85E597023004CAC5009ADB48 /* SnapKit */; };
+		85E597063004CAEF009ADB48 /* Then in Frameworks */ = {isa = PBXBuildFile; productRef = 85E597053004CAEF009ADB48 /* Then */; };
+		85E597093004CB5D009ADB48 /* Moya in Frameworks */ = {isa = PBXBuildFile; productRef = 85E597083004CB5D009ADB48 /* Moya */; };
+		85E5970C3004CC4B009ADB48 /* Nuke in Frameworks */ = {isa = PBXBuildFile; productRef = 85E5970B3004CC4B009ADB48 /* Nuke */; };
+		85E5970E3004CC4B009ADB48 /* NukeExtensions in Frameworks */ = {isa = PBXBuildFile; productRef = 85E5970D3004CC4B009ADB48 /* NukeExtensions */; };
+		85E597103004CC4B009ADB48 /* NukeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 85E5970F3004CC4B009ADB48 /* NukeUI */; };
+		85E597123004CC4B009ADB48 /* NukeVideo in Frameworks */ = {isa = PBXBuildFile; productRef = 85E597113004CC4B009ADB48 /* NukeVideo */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		85E5963A3004ADD8009ADB48 /* KOLPOP_iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KOLPOP_iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -36,6 +46,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				85E597033004CAC5009ADB48 /* SnapKit in Frameworks */,
+				85E597063004CAEF009ADB48 /* Then in Frameworks */,
+				85E597123004CC4B009ADB48 /* NukeVideo in Frameworks */,
+				85E597093004CB5D009ADB48 /* Moya in Frameworks */,
+				85E597103004CC4B009ADB48 /* NukeUI in Frameworks */,
+				85E5970C3004CC4B009ADB48 /* Nuke in Frameworks */,
+				85E5970E3004CC4B009ADB48 /* NukeExtensions in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +95,13 @@
 			);
 			name = KOLPOP_iOS;
 			packageProductDependencies = (
+				85E597023004CAC5009ADB48 /* SnapKit */,
+				85E597053004CAEF009ADB48 /* Then */,
+				85E597083004CB5D009ADB48 /* Moya */,
+				85E5970B3004CC4B009ADB48 /* Nuke */,
+				85E5970D3004CC4B009ADB48 /* NukeExtensions */,
+				85E5970F3004CC4B009ADB48 /* NukeUI */,
+				85E597113004CC4B009ADB48 /* NukeVideo */,
 			);
 			productName = KOLPOP_iOS;
 			productReference = 85E5963A3004ADD8009ADB48 /* KOLPOP_iOS.app */;
@@ -107,6 +131,12 @@
 			);
 			mainGroup = 85E596313004ADD8009ADB48;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				85E597013004CAC5009ADB48 /* XCRemoteSwiftPackageReference "SnapKit" */,
+				85E597043004CAEF009ADB48 /* XCRemoteSwiftPackageReference "Then" */,
+				85E597073004CB5D009ADB48 /* XCRemoteSwiftPackageReference "Moya" */,
+				85E5970A3004CC4B009ADB48 /* XCRemoteSwiftPackageReference "Nuke" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 85E5963B3004ADD8009ADB48 /* Products */;
 			projectDirPath = "";
@@ -343,6 +373,79 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		85E597013004CAC5009ADB48 /* XCRemoteSwiftPackageReference "SnapKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
+			requirement = {
+				kind = exactVersion;
+				version = 6.0.0;
+			};
+		};
+		85E597043004CAEF009ADB48 /* XCRemoteSwiftPackageReference "Then" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/devxoul/Then.git";
+			requirement = {
+				kind = exactVersion;
+				version = 3.0.0;
+			};
+		};
+		85E597073004CB5D009ADB48 /* XCRemoteSwiftPackageReference "Moya" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Moya/Moya.git";
+			requirement = {
+				kind = exactVersion;
+				version = 15.0.3;
+			};
+		};
+		85E5970A3004CC4B009ADB48 /* XCRemoteSwiftPackageReference "Nuke" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kean/Nuke.git";
+			requirement = {
+				kind = exactVersion;
+				version = 13.0.6;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		85E597023004CAC5009ADB48 /* SnapKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 85E597013004CAC5009ADB48 /* XCRemoteSwiftPackageReference "SnapKit" */;
+			productName = SnapKit;
+		};
+		85E597053004CAEF009ADB48 /* Then */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 85E597043004CAEF009ADB48 /* XCRemoteSwiftPackageReference "Then" */;
+			productName = Then;
+		};
+		85E597083004CB5D009ADB48 /* Moya */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 85E597073004CB5D009ADB48 /* XCRemoteSwiftPackageReference "Moya" */;
+			productName = Moya;
+		};
+		85E5970B3004CC4B009ADB48 /* Nuke */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 85E5970A3004CC4B009ADB48 /* XCRemoteSwiftPackageReference "Nuke" */;
+			productName = Nuke;
+		};
+		85E5970D3004CC4B009ADB48 /* NukeExtensions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 85E5970A3004CC4B009ADB48 /* XCRemoteSwiftPackageReference "Nuke" */;
+			productName = NukeExtensions;
+		};
+		85E5970F3004CC4B009ADB48 /* NukeUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 85E5970A3004CC4B009ADB48 /* XCRemoteSwiftPackageReference "Nuke" */;
+			productName = NukeUI;
+		};
+		85E597113004CC4B009ADB48 /* NukeVideo */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 85E5970A3004CC4B009ADB48 /* XCRemoteSwiftPackageReference "Nuke" */;
+			productName = NukeVideo;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 85E596323004ADD8009ADB48 /* Project object */;
 }
