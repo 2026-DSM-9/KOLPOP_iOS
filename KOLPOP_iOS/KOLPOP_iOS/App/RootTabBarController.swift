@@ -7,6 +7,14 @@ import UIKit
 
 final class RootTabBarController: UITabBarController {
 
+    enum Tab: Int {
+        case home
+        case map
+        case ai
+        case chat
+        case mypage
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupTabs()
