@@ -28,6 +28,7 @@ final class HomeViewController: UIViewController {
         $0.backgroundColor = UIColor(named: "FFFFFF")
         $0.showsVerticalScrollIndicator = false
         $0.dataSource = self
+        $0.delegate = self
         $0.register(FestivalBannerCell.self, forCellWithReuseIdentifier: FestivalBannerCell.reuseIdentifier)
         $0.register(QuickMenuCell.self, forCellWithReuseIdentifier: QuickMenuCell.reuseIdentifier)
         $0.register(PopularListingCell.self, forCellWithReuseIdentifier: PopularListingCell.reuseIdentifier)
@@ -182,5 +183,27 @@ extension HomeViewController: UICollectionViewDataSource {
             break
         }
         return header
+    }
+}
+
+extension HomeViewController: UICollectionViewDelegate {
+
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        collectionView.deselectItem(at: indexPath, animated: true)
+
+        switch Section(rawValue: indexPath.section) {
+        case .banner:
+            navigationController?.pushViewController(FestivalPopupViewController(), animated: true)
+
+        case .quickMenu:
+            if indexPath.item == 0 {
+                navigationController?.pushViewController(FestivalCalendarViewController(), animated: true)
+            } else {
+                tabBarController?.selectedIndex = RootTabBarController.Tab.ai.rawValue
+            }
+
+        case .popular, .none:
+            break
+        }
     }
 }
