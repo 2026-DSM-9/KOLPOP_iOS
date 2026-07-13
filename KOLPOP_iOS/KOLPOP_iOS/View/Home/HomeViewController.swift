@@ -37,6 +37,7 @@ final class HomeViewController: UIViewController {
     ).then {
         $0.backgroundColor = UIColor(named: "FFFFFF")
         $0.showsVerticalScrollIndicator = false
+        $0.allowsMultipleSelection = false
         $0.dataSource = self
         $0.delegate = self
         $0.register(FestivalBannerCell.self, forCellWithReuseIdentifier: FestivalBannerCell.reuseIdentifier)
@@ -55,6 +56,12 @@ final class HomeViewController: UIViewController {
         view.backgroundColor = .white
         setupNavigationBar()
         setupLayout()
+        preselectDefaultCategory()
+    }
+
+    private func preselectDefaultCategory() {
+        let indexPath = IndexPath(item: selectedCategoryIndex, section: Section.category.rawValue)
+        collectionView.selectItem(at: indexPath, animated: false, scrollPosition: [])
     }
 
     private func setupNavigationBar() {
@@ -191,8 +198,7 @@ extension HomeViewController: UICollectionViewDataSource {
 
         case .category:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CategoryChipCell.reuseIdentifier, for: indexPath) as! CategoryChipCell
-            let category = categories[indexPath.item]
-            cell.configure(title: category.title, isSelected: indexPath.item == selectedCategoryIndex)
+            cell.configure(title: categories[indexPath.item].title)
             return cell
 
         case .popular:
@@ -228,8 +234,6 @@ extension HomeViewController: UICollectionViewDelegate {
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard Section(rawValue: indexPath.section) == .category else { return }
-        let previous = selectedCategoryIndex
         selectedCategoryIndex = indexPath.item
-        collectionView.reloadItems(at: [IndexPath(item: previous, section: indexPath.section), indexPath])
     }
 }
