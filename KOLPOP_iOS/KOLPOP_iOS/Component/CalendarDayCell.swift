@@ -47,15 +47,17 @@ final class CalendarDayCell: UICollectionViewCell {
         contentView.addSubview(dayLabel)
         contentView.addSubview(dotView)
 
+
         backgroundShape.snp.makeConstraints { make in
-            make.width.height.equalTo(36)
-            make.center.equalToSuperview()
+            make.width.height.equalTo(32)
+            make.centerX.equalToSuperview()
+            make.top.equalToSuperview().offset(2)
         }
         dayLabel.snp.makeConstraints { make in
             make.center.equalTo(backgroundShape)
         }
         dotView.snp.makeConstraints { make in
-            make.top.equalTo(backgroundShape.snp.bottom).offset(4)
+            make.top.equalTo(backgroundShape.snp.bottom).offset(3)
             make.centerX.equalToSuperview()
             make.width.height.equalTo(6)
         }
@@ -83,7 +85,7 @@ final class CalendarDayCell: UICollectionViewCell {
             dayLabel.textColor = UIColor(named: "1A1C1E")
         case .selected:
             backgroundShape.backgroundColor = UIColor(named: "EA8C21")
-            backgroundShape.layer.cornerRadius = 18
+            backgroundShape.layer.cornerRadius = 16
             dayLabel.textColor = .white
         }
 
