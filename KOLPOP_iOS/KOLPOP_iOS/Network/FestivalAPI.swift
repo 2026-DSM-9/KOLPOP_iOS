@@ -8,7 +8,7 @@ import Moya
 import Alamofire
 
 enum FestivalAPI {
-    case list(page: Int, keyword: String?)
+    case list(page: Int, numOfRows: Int, keyword: String?)
 }
 
 extension FestivalAPI: TargetType {
@@ -28,9 +28,9 @@ extension FestivalAPI: TargetType {
         ]
 
         switch self {
-        case .list(let page, let keyword):
+        case .list(let page, let numOfRows, let keyword):
             parameters["pageNo"] = page
-            parameters["numOfRows"] = 30
+            parameters["numOfRows"] = numOfRows
             if let keyword, !keyword.isEmpty {
                 parameters["fstvlNm"] = keyword
             }
