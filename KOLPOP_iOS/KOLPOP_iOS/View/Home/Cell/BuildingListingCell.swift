@@ -1,16 +1,16 @@
 //
-//  FestivalCardCell.swift
+//  BuildingListingCell.swift
 //  KOLPOP_iOS
 //
 
 import UIKit
 import SnapKit
 
-final class FestivalCardCell: UITableViewCell {
+final class BuildingListingCell: UITableViewCell {
 
-    static let reuseIdentifier = "FestivalCardCell"
+    static let reuseIdentifier = "BuildingListingCell"
 
-    private let cardView = FestivalInfoCardView(descriptionNumberOfLines: 1)
+    private let cardView = ListingCardView()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -27,11 +27,12 @@ final class FestivalCardCell: UITableViewCell {
 
         contentView.addSubview(cardView)
         cardView.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(UIEdgeInsets(top: 8, left: 20, bottom: 8, right: 20))
+            make.top.bottom.equalToSuperview().inset(8)
+            make.leading.trailing.equalToSuperview().inset(20)
         }
     }
 
-    func configure(with festival: Festival, nearbyVacantBuildingCount: Int) {
-        cardView.configure(with: festival, nearbyVacantBuildingCount: nearbyVacantBuildingCount)
+    func configure(with listing: PopularListing) {
+        cardView.configure(with: listing)
     }
 }
