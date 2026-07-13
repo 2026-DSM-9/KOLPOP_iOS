@@ -113,7 +113,7 @@ final class HomeViewController: UIViewController {
             layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalHeight(1))
         )
         let group = NSCollectionLayoutGroup.horizontal(
-            layoutSize: NSCollectionLayoutSize(widthDimension: .absolute(180), heightDimension: .absolute(260)),
+            layoutSize: NSCollectionLayoutSize(widthDimension: .absolute(224), heightDimension: .absolute(300)),
             subitems: [item]
         )
         let section = NSCollectionLayoutSection(group: group)
