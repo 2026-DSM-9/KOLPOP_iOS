@@ -59,6 +59,11 @@ final class CalendarMonthView: UIView {
         $0.register(CalendarDayCell.self, forCellWithReuseIdentifier: CalendarDayCell.reuseIdentifier)
     }
 
+    /// 한 달은 최대 6주까지 나올 수 있어 행 수를 6으로 고정해 달력 높이를 안정적으로 유지한다.
+    private static let rowCount = 6
+    private static let cellHeight: CGFloat = 44
+    private static let lineSpacing: CGFloat = 12
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupLayout()
@@ -103,8 +108,13 @@ final class CalendarMonthView: UIView {
         collectionView.snp.makeConstraints { make in
             make.top.equalTo(weekdayStackView.snp.bottom).offset(8)
             make.leading.trailing.equalToSuperview().inset(16)
+            make.height.equalTo(gridHeight)
             make.bottom.equalToSuperview().offset(-20)
         }
+    }
+
+    private var gridHeight: CGFloat {
+        CGFloat(Self.rowCount) * Self.cellHeight + CGFloat(Self.rowCount - 1) * Self.lineSpacing
     }
 
     private func setupWeekdayHeader() {
@@ -130,14 +140,13 @@ final class CalendarMonthView: UIView {
         let firstDayOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: month)) ?? month
         let leadingBlanks = calendar.component(.weekday, from: firstDayOfMonth) - 1
 
-        days = Array(repeating: nil, count: leadingBlanks) + range.map { $0 }
+        var newDays = Array(repeating: nil as Int?, count: leadingBlanks) + range.map { $0 }
+        let totalCells = Self.rowCount * 7
+        if newDays.count < totalCells {
+            newDays += Array(repeating: nil, count: totalCells - newDays.count)
+        }
+        days = newDays
         collectionView.reloadData()
-        invalidateIntrinsicContentSize()
-        collectionView.layoutIfNeeded()
-    }
-
-    override var intrinsicContentSize: CGSize {
-        CGSize(width: UIView.noIntrinsicMetric, height: collectionView.contentSize.height + 20 + 24 + 20 + 8 + 20)
     }
 
     @objc private func prevTapped() { onPrevMonth?() }

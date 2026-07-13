@@ -29,6 +29,10 @@ final class FestivalCalendarViewController: UIViewController {
         $0.textColor = UIColor(named: "1A1C1E")
     }
 
+    private let scrollView = UIScrollView().then {
+        $0.showsVerticalScrollIndicator = false
+    }
+
     private let emptyLabel = UILabel().then {
         $0.text = "축제 일정이 없습니다."
         $0.font = .paperlogy(.medium, size: 15)
@@ -65,9 +69,10 @@ final class FestivalCalendarViewController: UIViewController {
     }
 
     private func setupLayout() {
+        scrollView.addSubview(emptyLabel)
+        scrollView.addSubview(festivalListStackView)
         detailContainerView.addSubview(selectedDateLabel)
-        detailContainerView.addSubview(emptyLabel)
-        detailContainerView.addSubview(festivalListStackView)
+        detailContainerView.addSubview(scrollView)
 
         view.addSubview(calendarMonthView)
         view.addSubview(detailContainerView)
@@ -79,19 +84,27 @@ final class FestivalCalendarViewController: UIViewController {
         detailContainerView.snp.makeConstraints { make in
             make.top.equalTo(calendarMonthView.snp.bottom).offset(20)
             make.leading.trailing.equalToSuperview().inset(20)
+            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-20)
         }
 
         selectedDateLabel.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(20)
             make.leading.trailing.equalToSuperview().inset(20)
         }
-        emptyLabel.snp.makeConstraints { make in
+        scrollView.snp.makeConstraints { make in
             make.top.equalTo(selectedDateLabel.snp.bottom).offset(16)
+            make.leading.trailing.bottom.equalToSuperview()
+        }
+
+        emptyLabel.snp.makeConstraints { make in
+            make.top.equalToSuperview()
             make.leading.trailing.equalToSuperview().inset(20)
+            make.width.equalTo(scrollView).offset(-40)
         }
         festivalListStackView.snp.makeConstraints { make in
-            make.top.equalTo(selectedDateLabel.snp.bottom).offset(16)
+            make.top.equalToSuperview()
             make.leading.trailing.equalToSuperview().inset(20)
+            make.width.equalTo(scrollView).offset(-40)
             make.bottom.equalToSuperview().offset(-20)
         }
     }
