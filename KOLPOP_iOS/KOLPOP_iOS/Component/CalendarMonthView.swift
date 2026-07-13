@@ -181,7 +181,8 @@ extension CalendarMonthView: UICollectionViewDataSource {
 extension CalendarMonthView: UICollectionViewDelegateFlowLayout {
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let width = collectionView.bounds.width / 7
+        // 나눗셈 결과를 그대로 쓰면 누적 오차로 7번째 셀이 다음 줄로 밀려 6개씩만 배치되므로 내림 처리한다.
+        let width = (collectionView.bounds.width / 7).rounded(.down)
         return CGSize(width: width, height: 44)
     }
 
