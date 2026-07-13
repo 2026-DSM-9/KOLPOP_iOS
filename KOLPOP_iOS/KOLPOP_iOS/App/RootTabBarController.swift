@@ -17,8 +17,23 @@ final class RootTabBarController: UITabBarController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupNavigationBarAppearance()
         setupTabs()
         setupAppearance()
+    }
+
+    private func setupNavigationBarAppearance() {
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = .white
+        appearance.titleTextAttributes = [
+            .font: UIFont.paperlogy(.semiBold, size: 24),
+            .foregroundColor: UIColor(named: "0F1010") ?? .black
+        ]
+
+        UINavigationBar.appearance().standardAppearance = appearance
+        UINavigationBar.appearance().scrollEdgeAppearance = appearance
+        UINavigationBar.appearance().compactAppearance = appearance
     }
 
     private func setupTabs() {
