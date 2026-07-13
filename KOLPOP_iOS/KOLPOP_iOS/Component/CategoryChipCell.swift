@@ -12,7 +12,7 @@ final class CategoryChipCell: UICollectionViewCell {
     static let reuseIdentifier = "CategoryChipCell"
 
     private let titleLabel = UILabel().then {
-        $0.font = .paperlogy(.semiBold, size: 15)
+        $0.font = .paperlogy(.medium, size: 12)
         $0.textAlignment = .center
     }
 

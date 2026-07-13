@@ -12,7 +12,7 @@ final class HomeSectionHeaderView: UICollectionReusableView {
     static let reuseIdentifier = "HomeSectionHeaderView"
 
     private let titleLabel = UILabel().then {
-        $0.font = .systemFont(ofSize: 20, weight: .bold)
+        $0.font = .paperlogy(.bold, size: 16)
         $0.textColor = UIColor(named: "1A1C1E")
     }
 

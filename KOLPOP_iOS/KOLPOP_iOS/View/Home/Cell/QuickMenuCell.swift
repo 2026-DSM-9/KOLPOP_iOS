@@ -24,12 +24,12 @@ final class QuickMenuCell: UICollectionViewCell {
     }
 
     private let titleLabel = UILabel().then {
-        $0.font = .systemFont(ofSize: 18, weight: .bold)
+        $0.font = .paperlogy(.bold, size: 14)
         $0.numberOfLines = 1
     }
 
     private let subtitleLabel = UILabel().then {
-        $0.font = .systemFont(ofSize: 13, weight: .regular)
+        $0.font = .paperlogy(.regular, size: 10)
     }
 
     override init(frame: CGRect) {

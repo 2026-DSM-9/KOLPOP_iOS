@@ -53,8 +53,8 @@ final class HomeViewController: UIViewController {
 
         let titleLabel = UILabel().then {
             $0.text = "콜팝"
-            $0.font = .systemFont(ofSize: 24, weight: .heavy)
-            $0.textColor = UIColor(named: "1A1C1E")
+            $0.font = .paperlogy(.semiBold, size: 24)
+            $0.textColor = UIColor(named: "0F1010")
         }
         navigationItem.titleView = titleLabel
         navigationItem.leftBarButtonItem = UIBarButtonItem(customView: UIView())
