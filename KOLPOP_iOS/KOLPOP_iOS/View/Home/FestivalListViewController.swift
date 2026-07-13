@@ -96,6 +96,12 @@ extension FestivalListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         UITableView.automaticDimension
     }
+
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        let detailViewController = FestivalDetailViewController(festival: festivals[indexPath.row])
+        navigationController?.pushViewController(detailViewController, animated: true)
+    }
 }
 
 extension FestivalListViewController: UITextFieldDelegate {
