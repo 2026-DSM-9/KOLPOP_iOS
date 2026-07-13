@@ -19,6 +19,7 @@ final class CategoryChipCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupLayout()
+        applyStyle()
     }
 
     required init?(coder: NSCoder) {
@@ -27,8 +28,6 @@ final class CategoryChipCell: UICollectionViewCell {
 
     private func setupLayout() {
         contentView.layer.cornerRadius = 20
-        contentView.layer.borderWidth = 1
-        contentView.layer.borderColor = UIColor(named: "E8E8E8")?.cgColor
 
         contentView.addSubview(titleLabel)
         titleLabel.snp.makeConstraints { make in
@@ -42,9 +41,8 @@ final class CategoryChipCell: UICollectionViewCell {
         didSet { applyStyle() }
     }
 
-    func configure(title: String, isSelected: Bool) {
+    func configure(title: String) {
         titleLabel.text = title
-        self.isSelected = isSelected
     }
 
     private func applyStyle() {
@@ -55,6 +53,7 @@ final class CategoryChipCell: UICollectionViewCell {
         } else {
             contentView.backgroundColor = .white
             contentView.layer.borderWidth = 1
+            contentView.layer.borderColor = UIColor(named: "E8E8E8")?.cgColor
             titleLabel.textColor = UIColor(named: "1A1C1E")
         }
     }
