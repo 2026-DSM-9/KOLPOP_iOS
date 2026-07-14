@@ -34,17 +34,10 @@ final class ChatViewController: UIViewController {
         }
     }
 
-    // TODO: 실제 채팅 목록 API 연동 전까지는 목업 데이터를 사용한다.
-    private let rooms: [ChatRoom] = [
-        ChatRoom(id: "0", imageURL: nil, title: "대덕소프트웨어마이스터고", lastMessage: "네, 7월 20일부터 3주간 가능합니다.", senderName: "김임대", status: .inProgress, unreadCount: 0),
-        ChatRoom(id: "1", imageURL: nil, title: "대덕소프트웨어마이스터고", lastMessage: "네, 7월 20일부터 3주간 가능합니다.", senderName: "김임대", status: .inProgress, unreadCount: 1),
-        ChatRoom(id: "2", imageURL: nil, title: "대덕소프트웨어마이스터고", lastMessage: "네, 7월 20일부터 3주간 가능합니다.", senderName: "김임대", status: .inProgress, unreadCount: 2),
-        ChatRoom(id: "3", imageURL: nil, title: "대덕소프트웨어마이스터고", lastMessage: "네, 7월 20일부터 3주간 가능합니다.", senderName: "김임대", status: .completed, unreadCount: 0),
-        ChatRoom(id: "4", imageURL: nil, title: "대덕소프트웨어마이스터고", lastMessage: "네, 7월 20일부터 3주간 가능합니다.", senderName: "김임대", status: .rejected, unreadCount: 0),
-        ChatRoom(id: "5", imageURL: nil, title: "대덕소프트웨어마이스터고", lastMessage: "네, 7월 20일부터 3주간 가능합니다.", senderName: "김임대", status: .completed, unreadCount: 0)
-    ]
-
+    private let chatService = ChatService()
+    private var rooms: [ChatRoom] = []
     private var filteredRooms: [ChatRoom] = []
+    private let loadingOverlayView = LoadingOverlayView(message: "채팅 목록을 불러오는 중이에요")
     private var selectedFilter: Filter = .all
 
     private let titleLabel = UILabel().then {
@@ -88,10 +81,31 @@ final class ChatViewController: UIViewController {
 
         filterCollectionView.selectItem(at: IndexPath(item: 0, section: 0), animated: false, scrollPosition: [])
         applyFilter()
+        fetchRooms()
+    }
+
+    private func fetchRooms() {
+        chatService.fetchRooms { [weak self] result in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                self.loadingOverlayView.isHidden = true
+                switch result {
+                case .success(let responses):
+                    self.rooms = responses.map(ChatRoom.init(response:))
+                    self.applyFilter()
+                case .failure(let error):
+                    print("채팅방 목록 조회 실패: \(error)")
+                }
+            }
+        }
     }
 
     private func setupLayout() {
-        [titleLabel, filterCollectionView, tableView].forEach { view.addSubview($0) }
+        [titleLabel, filterCollectionView, tableView, loadingOverlayView].forEach { view.addSubview($0) }
+
+        loadingOverlayView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
 
         titleLabel.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide).offset(8)

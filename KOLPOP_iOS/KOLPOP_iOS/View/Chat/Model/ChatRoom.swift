@@ -52,3 +52,18 @@ struct ChatRoom {
     let status: ChatStatus
     let unreadCount: Int
 }
+
+extension ChatRoom {
+
+    /// ChatRoomResponse에는 상태/최근 메시지/안읽음 개수 정보가 없어 기본값으로 채운다.
+    init(response: ChatRoomResponse) {
+        let counterpart = response.founder.id == TokenStore.shared.currentUserId ? response.landlord : response.founder
+        id = String(response.roomId)
+        imageURL = nil
+        title = counterpart.name
+        lastMessage = ""
+        senderName = counterpart.name
+        status = .inProgress
+        unreadCount = 0
+    }
+}
