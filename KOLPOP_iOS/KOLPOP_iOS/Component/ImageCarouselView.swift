@@ -25,6 +25,13 @@ final class ImageCarouselView: UIView {
         $0.clipsToBounds = true
     }
 
+    private let previousButton = UIButton(type: .system).then {
+        $0.backgroundColor = UIColor.white.withAlphaComponent(0.9)
+        $0.layer.cornerRadius = 18
+        $0.setImage(UIImage(systemName: "chevron.left"), for: .normal)
+        $0.tintColor = UIColor(named: "1A1C1E")
+    }
+
     private let nextButton = UIButton(type: .system).then {
         $0.backgroundColor = UIColor.white.withAlphaComponent(0.9)
         $0.layer.cornerRadius = 18
@@ -45,10 +52,15 @@ final class ImageCarouselView: UIView {
         clipsToBounds = true
         scrollView.delegate = self
 
-        [scrollView, pageLabel, nextButton].forEach { addSubview($0) }
+        [scrollView, pageLabel, previousButton, nextButton].forEach { addSubview($0) }
 
         scrollView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
+        }
+        previousButton.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(16)
+            make.centerY.equalToSuperview()
+            make.width.height.equalTo(36)
         }
         nextButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().offset(-16)
@@ -62,6 +74,7 @@ final class ImageCarouselView: UIView {
             make.height.equalTo(22)
         }
 
+        previousButton.addTarget(self, action: #selector(previousTapped), for: .touchUpInside)
         nextButton.addTarget(self, action: #selector(nextTapped), for: .touchUpInside)
     }
 
@@ -85,12 +98,19 @@ final class ImageCarouselView: UIView {
 
         layoutIfNeeded()
         scrollView.contentSize = CGSize(width: bounds.width * CGFloat(imageNames.count), height: bounds.height)
-        updatePageLabel(page: 0)
-        nextButton.isHidden = imageNames.count <= 1
+        updatePage(0)
     }
 
-    private func updatePageLabel(page: Int) {
+    private func updatePage(_ page: Int) {
         pageLabel.text = "\(page + 1)/\(imageNames.count)"
+        previousButton.isHidden = imageNames.count <= 1 || page == 0
+        nextButton.isHidden = imageNames.count <= 1 || page == imageNames.count - 1
+    }
+
+    @objc private func previousTapped() {
+        let currentPage = Int(round(scrollView.contentOffset.x / max(scrollView.bounds.width, 1)))
+        let previousPage = max(currentPage - 1, 0)
+        scrollView.setContentOffset(CGPoint(x: CGFloat(previousPage) * scrollView.bounds.width, y: 0), animated: true)
     }
 
     @objc private func nextTapped() {
@@ -105,6 +125,6 @@ extension ImageCarouselView: UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         guard scrollView.bounds.width > 0 else { return }
         let page = Int(round(scrollView.contentOffset.x / scrollView.bounds.width))
-        updatePageLabel(page: max(0, min(page, imageNames.count - 1)))
+        updatePage(max(0, min(page, imageNames.count - 1)))
     }
 }
