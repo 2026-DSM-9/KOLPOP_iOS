@@ -46,6 +46,14 @@ final class ListingDetailViewController: UIViewController {
         $0.layer.cornerRadius = 16
     }
 
+    // TODO: 실제 찜하기 API 연동 전까지는 화면 안에서만 유지되는 상태로 처리한다.
+    private var isLiked = false
+
+    private let likeButton = UIButton(type: .system).then {
+        $0.backgroundColor = UIColor(named: "F8F8F8")
+        $0.layer.cornerRadius = 16
+    }
+
     init(info: ListingDetailInfo) {
         self.info = info
         super.init(nibName: nil, bundle: nil)
@@ -61,11 +69,41 @@ final class ListingDetailViewController: UIViewController {
         title = info.title
         setupLayout()
         configure()
+        updateLikeButton()
+        inquireButton.addTarget(self, action: #selector(inquireTapped), for: .touchUpInside)
+        likeButton.addTarget(self, action: #selector(likeTapped), for: .touchUpInside)
+    }
+
+    @objc private func likeTapped() {
+        isLiked.toggle()
+        updateLikeButton()
+    }
+
+    private func updateLikeButton() {
+        let imageName = isLiked ? "heart.fill" : "heart"
+        let tintColorName = isLiked ? "EA8C21" : "A3A4A5"
+        likeButton.setImage(UIImage(systemName: imageName), for: .normal)
+        likeButton.tintColor = UIColor(named: tintColorName)
+    }
+
+    @objc private func inquireTapped() {
+        // TODO: 실제 채팅방 생성/조회 API 연동 전까지는 매물 정보로 새 ChatRoom을 구성한다.
+        let room = ChatRoom(
+            id: info.title,
+            imageURL: nil,
+            title: info.title,
+            lastMessage: "",
+            senderName: info.landlordName,
+            status: .inProgress,
+            unreadCount: 0
+        )
+        navigationController?.pushViewController(ChatDetailViewController(room: room), animated: true)
     }
 
     private func setupLayout() {
         view.addSubview(scrollView)
         view.addSubview(inquireButton)
+        view.addSubview(likeButton)
         scrollView.addSubview(contentView)
 
         infoCardView.addSubview(addressLabel)
@@ -130,8 +168,14 @@ final class ListingDetailViewController: UIViewController {
             make.bottom.equalToSuperview().offset(-20)
         }
 
+        likeButton.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().offset(-20)
+            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-12)
+            make.width.height.equalTo(54)
+        }
         inquireButton.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview().inset(20)
+            make.leading.equalToSuperview().offset(20)
+            make.trailing.equalTo(likeButton.snp.leading).offset(-12)
             make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-12)
             make.height.equalTo(54)
         }

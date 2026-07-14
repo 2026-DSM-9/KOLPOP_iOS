@@ -13,6 +13,7 @@ struct MapListing {
     let address: String
     let sizeInfo: String
     let category: String
+    let landlordName: String
     let price: String
     let priceBadge: String
     let statusText: String
