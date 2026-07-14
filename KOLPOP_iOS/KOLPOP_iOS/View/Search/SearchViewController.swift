@@ -268,8 +268,20 @@ final class SearchViewController: UIViewController {
                 self.tableView.isHidden = self.nearbyListings.isEmpty
                 self.tableView.reloadData()
 
-                if autoSelectFirstResult, let firstListing = self.nearbyListings.first {
-                    self.selectListing(id: firstListing.id)
+                if autoSelectFirstResult {
+                    // nearbyListings와 map.listings는 서버에서 서로 다른 기준으로 내려줄 수 있어,
+                    // 지도 중심 이동이 가능하도록 두 목록에 모두 존재하는 매물을 우선 선택한다.
+                    let matched = self.nearbyListings.first { nearby in
+                        self.mapListings.contains { $0.id == nearby.id }
+                    } ?? self.nearbyListings.first
+
+                    if let matched {
+                        // addAnnotations 직후에는 MapKit이 아직 annotation view를 만들지 않아
+                        // 하이라이트가 적용되지 않을 수 있어 한 틱 뒤로 미룬다.
+                        DispatchQueue.main.async {
+                            self.selectListing(id: matched.id)
+                        }
+                    }
                 }
             }
         }
