@@ -6,10 +6,11 @@
 import UIKit
 import SnapKit
 import Then
+import NukeExtensions
 
 final class ImageCarouselView: UIView {
 
-    private var imageNames: [String] = []
+    private var pageCount = 0
 
     private let scrollView = UIScrollView().then {
         $0.isPagingEnabled = true
@@ -79,15 +80,28 @@ final class ImageCarouselView: UIView {
     }
 
     func configure(imageNames: [String]) {
-        self.imageNames = imageNames
+        layoutPages(count: imageNames.count) { imageView, index in
+            imageView.image = UIImage(named: imageNames[index])
+        }
+    }
+
+    func configure(imageURLs: [URL]) {
+        layoutPages(count: imageURLs.count) { imageView, index in
+            NukeExtensions.loadImage(with: imageURLs[index], into: imageView)
+        }
+    }
+
+    private func layoutPages(count: Int, configureImageView: (UIImageView, Int) -> Void) {
+        pageCount = count
         scrollView.subviews.forEach { $0.removeFromSuperview() }
 
-        for (index, name) in imageNames.enumerated() {
-            let imageView = UIImageView(image: UIImage(named: name)).then {
+        for index in 0..<count {
+            let imageView = UIImageView().then {
                 $0.contentMode = .scaleAspectFill
                 $0.clipsToBounds = true
                 $0.backgroundColor = UIColor(named: "E8E8E8")
             }
+            configureImageView(imageView, index)
             scrollView.addSubview(imageView)
             imageView.snp.makeConstraints { make in
                 make.top.bottom.equalToSuperview()
@@ -97,14 +111,14 @@ final class ImageCarouselView: UIView {
         }
 
         layoutIfNeeded()
-        scrollView.contentSize = CGSize(width: bounds.width * CGFloat(imageNames.count), height: bounds.height)
+        scrollView.contentSize = CGSize(width: bounds.width * CGFloat(count), height: bounds.height)
         updatePage(0)
     }
 
     private func updatePage(_ page: Int) {
-        pageLabel.text = "\(page + 1)/\(imageNames.count)"
-        previousButton.isHidden = imageNames.count <= 1 || page == 0
-        nextButton.isHidden = imageNames.count <= 1 || page == imageNames.count - 1
+        pageLabel.text = "\(page + 1)/\(pageCount)"
+        previousButton.isHidden = pageCount <= 1 || page == 0
+        nextButton.isHidden = pageCount <= 1 || page == pageCount - 1
     }
 
     @objc private func previousTapped() {
@@ -115,7 +129,7 @@ final class ImageCarouselView: UIView {
 
     @objc private func nextTapped() {
         let currentPage = Int(round(scrollView.contentOffset.x / max(scrollView.bounds.width, 1)))
-        let nextPage = min(currentPage + 1, imageNames.count - 1)
+        let nextPage = min(currentPage + 1, pageCount - 1)
         scrollView.setContentOffset(CGPoint(x: CGFloat(nextPage) * scrollView.bounds.width, y: 0), animated: true)
     }
 }
@@ -125,6 +139,6 @@ extension ImageCarouselView: UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         guard scrollView.bounds.width > 0 else { return }
         let page = Int(round(scrollView.contentOffset.x / scrollView.bounds.width))
-        updatePage(max(0, min(page, imageNames.count - 1)))
+        updatePage(max(0, min(page, pageCount - 1)))
     }
 }

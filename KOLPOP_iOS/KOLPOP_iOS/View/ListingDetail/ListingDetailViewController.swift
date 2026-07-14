@@ -9,7 +9,9 @@ import Then
 
 final class ListingDetailViewController: UIViewController {
 
-    private let info: ListingDetailInfo
+    private let listingService = ListingService()
+    private var info: ListingDetailInfo?
+    private let loadingOverlayView = LoadingOverlayView(message: "매물 정보를 불러오는 중이에요")
 
     private let scrollView = UIScrollView().then {
         $0.showsVerticalScrollIndicator = false
@@ -54,8 +56,16 @@ final class ListingDetailViewController: UIViewController {
         $0.layer.cornerRadius = 16
     }
 
+    private var listingId: Int?
+
     init(info: ListingDetailInfo) {
         self.info = info
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    init(listingId: Int) {
+        self.info = nil
+        self.listingId = listingId
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -66,12 +76,36 @@ final class ListingDetailViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        title = info.title
         setupLayout()
-        configure()
         updateLikeButton()
         inquireButton.addTarget(self, action: #selector(inquireTapped), for: .touchUpInside)
         likeButton.addTarget(self, action: #selector(likeTapped), for: .touchUpInside)
+
+        if let info {
+            title = info.title
+            configure()
+        } else if let listingId {
+            fetchDetail(listingId: listingId)
+        }
+    }
+
+    private func fetchDetail(listingId: Int) {
+        loadingOverlayView.isHidden = false
+        listingService.fetchDetail(listingId: listingId) { [weak self] result in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                self.loadingOverlayView.isHidden = true
+                switch result {
+                case .success(let response):
+                    let info = ListingDetailInfo(response: response)
+                    self.info = info
+                    self.title = info.title
+                    self.configure()
+                case .failure(let error):
+                    print("매물 상세 조회 실패: \(error)")
+                }
+            }
+        }
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -93,6 +127,7 @@ final class ListingDetailViewController: UIViewController {
     }
 
     @objc private func inquireTapped() {
+        guard let info else { return }
         // TODO: 실제 채팅방 생성/조회 API 연동 전까지는 매물 정보로 새 ChatRoom을 구성한다.
         let room = ChatRoom(
             id: info.title,
@@ -118,6 +153,10 @@ final class ListingDetailViewController: UIViewController {
 
         [imageCarouselView, infoCardView, priceCard, operationCard, facilityCard, restrictionCard, descriptionCard].forEach {
             contentView.addSubview($0)
+        }
+        view.addSubview(loadingOverlayView)
+        loadingOverlayView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
         }
 
         scrollView.snp.makeConstraints { make in
@@ -188,19 +227,25 @@ final class ListingDetailViewController: UIViewController {
     }
 
     private func configure() {
-        imageCarouselView.configure(imageNames: info.imageNames)
+        guard let info else { return }
+
+        if info.imageURLs.isEmpty {
+            imageCarouselView.configure(imageNames: info.imageNames)
+        } else {
+            imageCarouselView.configure(imageURLs: info.imageURLs)
+        }
         addressLabel.text = info.address
         landlordLabel.text = info.landlordName
         tagWrapView.setChips(info.tags.map { makeDarkTagView(title: $0) })
 
-        setupPriceCard()
-        setupOperationCard()
-        setupFacilityCard()
-        setupRestrictionCard()
-        setupDescriptionCard()
+        setupPriceCard(info: info)
+        setupOperationCard(info: info)
+        setupFacilityCard(info: info)
+        setupRestrictionCard(info: info)
+        setupDescriptionCard(info: info)
     }
 
-    private func setupPriceCard() {
+    private func setupPriceCard(info: ListingDetailInfo) {
         let depositBox = makeInfoBox(label: "보증금", value: info.deposit, valueColorName: "1A1C1E")
         let dailyPriceBox = makeInfoBox(label: "일당 가격", value: info.dailyPrice, valueColorName: "00688F")
         let areaBox = makeInfoBox(label: "면적", value: info.area, valueColorName: "1A1C1E")
@@ -220,7 +265,7 @@ final class ListingDetailViewController: UIViewController {
         }
     }
 
-    private func setupOperationCard() {
+    private func setupOperationCard(info: ListingDetailInfo) {
         let stack = UIStackView(arrangedSubviews: [
             makeInfoRow(label: "이용 가능 기간", value: info.availablePeriod),
             makeInfoRow(label: "운영 일수", value: info.operatingDaysInfo)
@@ -234,7 +279,7 @@ final class ListingDetailViewController: UIViewController {
         }
     }
 
-    private func setupFacilityCard() {
+    private func setupFacilityCard(info: ListingDetailInfo) {
         if info.facilities.isEmpty {
             let emptyLabel = makeEmptyLabel()
             facilityCard.contentContainer.addSubview(emptyLabel)
@@ -251,7 +296,7 @@ final class ListingDetailViewController: UIViewController {
         }
     }
 
-    private func setupRestrictionCard() {
+    private func setupRestrictionCard(info: ListingDetailInfo) {
         if info.businessRestrictions.isEmpty {
             let emptyLabel = makeEmptyLabel()
             restrictionCard.contentContainer.addSubview(emptyLabel)
@@ -270,7 +315,7 @@ final class ListingDetailViewController: UIViewController {
         }
     }
 
-    private func setupDescriptionCard() {
+    private func setupDescriptionCard(info: ListingDetailInfo) {
         let label = UILabel().then {
             $0.text = info.description
             $0.font = .paperlogy(.regular, size: 15)

@@ -25,4 +25,24 @@ final class ListingService {
             }
         }
     }
+
+    func fetchDetail(listingId: Int, completion: @escaping (Result<ListingDetailResponse, Error>) -> Void) {
+        provider.request(.detail(listingId: listingId)) { result in
+            switch result {
+            case .success(let response):
+                do {
+                    let decoded = try JSONDecoder().decode(ApiResponse<ListingDetailResponse>.self, from: response.data)
+                    guard let detail = decoded.data else {
+                        completion(.failure(NSError(domain: "ListingService", code: -1, userInfo: [NSLocalizedDescriptionKey: "매물 상세 응답이 올바르지 않습니다."])))
+                        return
+                    }
+                    completion(.success(detail))
+                } catch {
+                    completion(.failure(error))
+                }
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
 }

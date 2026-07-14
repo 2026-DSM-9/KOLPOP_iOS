@@ -225,8 +225,7 @@ extension HomeViewController: UICollectionViewDelegate {
             }
 
         case .popular:
-            // TODO: 실제 매물 상세 API 연동 전까지는 목업 데이터를 사용한다.
-            navigationController?.pushViewController(ListingDetailViewController(info: .mock), animated: true)
+            navigationController?.pushViewController(ListingDetailViewController(listingId: popularListings[indexPath.item].id), animated: true)
 
         case .none:
             break

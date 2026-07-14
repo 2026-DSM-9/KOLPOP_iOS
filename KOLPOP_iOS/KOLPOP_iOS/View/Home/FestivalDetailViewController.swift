@@ -92,7 +92,6 @@ extension FestivalDetailViewController: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        // TODO: 실제 매물 상세 API 연동 전까지는 목업 데이터를 사용한다.
-        navigationController?.pushViewController(ListingDetailViewController(info: .mock), animated: true)
+        navigationController?.pushViewController(ListingDetailViewController(listingId: buildings[indexPath.row].id), animated: true)
     }
 }
