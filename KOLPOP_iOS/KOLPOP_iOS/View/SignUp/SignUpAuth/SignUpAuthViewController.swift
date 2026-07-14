@@ -14,8 +14,8 @@ final class SignUpAuthViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .white
         
-        let arrow = UIImageView().then {
-            $0.image = UIImage(systemName: "arrow.left")
+        let arrow = UIButton().then {
+            $0.setImage(UIImage(systemName: "arrow.left"), for: .normal)
             $0.tintColor = UIColor(named: "0F1010")
             view.addSubview($0)
             $0.snp.makeConstraints {
@@ -100,7 +100,6 @@ final class SignUpAuthViewController: UIViewController {
                 $0.bottom.equalToSuperview()
             }
         }
-        
         let inputView = UIView().then {
             $0.addSubview(phoneTitle)
             $0.addSubview(phoneTextField)
@@ -136,7 +135,6 @@ final class SignUpAuthViewController: UIViewController {
                 $0.bottom.equalToSuperview()
             }
         }
-        
         let codeCheckText = UILabel().then {
             $0.text = "인증코드를 확인해주세요"
             $0.textColor = UIColor(named: "FF5757")
