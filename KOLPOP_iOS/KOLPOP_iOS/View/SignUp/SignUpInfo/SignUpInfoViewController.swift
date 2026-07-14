@@ -9,12 +9,16 @@ import SnapKit
 import Then
 
 class SignUpInfoViewController : UIViewController {
+    @objc func arrowTapped() {
+        self.presentingViewController?.dismiss(animated: false, completion: nil)
+    }
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        let arrow = UIImageView().then {
-            $0.image = UIImage(systemName: "arrow.left")
+        let arrow = UIButton().then {
+            $0.setImage(UIImage(systemName: "arrow.left"), for: .normal)
             $0.tintColor = UIColor(named: "0F1010")
+            $0.addTarget(self, action: #selector(arrowTapped), for: .touchUpInside)
         }
         view.addSubview(arrow)
         arrow.snp.makeConstraints {
