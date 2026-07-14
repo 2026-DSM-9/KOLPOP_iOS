@@ -14,7 +14,9 @@ final class LoginViewController: UIViewController {
 
     private let brandHeaderView = SignUpBrandHeaderView()
 
-    private let idField = LabeledTextFieldView(title: "아이디", placeholder: "아이디를 입력해주세요")
+    private let idField = LabeledTextFieldView(title: "아이디", placeholder: "아이디를 입력해주세요").then {
+        $0.textField.autocapitalizationType = .none
+    }
 
     private let passwordField = LabeledTextFieldView(title: "비밀번호", placeholder: "비밀번호를 입력해주세요", isSecureField: true)
 

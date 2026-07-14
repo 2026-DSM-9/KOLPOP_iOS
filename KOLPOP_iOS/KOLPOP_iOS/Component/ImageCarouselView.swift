@@ -91,10 +91,16 @@ final class ImageCarouselView: UIView {
         }
     }
 
+    /// 각 페이지의 leading을 이전 페이지의 trailing에 이어 붙이고, 마지막 페이지의 trailing을
+    /// scrollView에 고정해 contentSize를 오토레이아웃이 스스로 계산하도록 한다.
+    /// 이전에는 leading 오프셋을 UIScreen.main.bounds.width(고정값)로 계산하면서
+    /// 너비는 self(가변값)에 맞추다 보니 둘이 미세하게 어긋나 스와이프 시 이미지가 밀리는
+    /// 문제가 있었다.
     private func layoutPages(count: Int, configureImageView: (UIImageView, Int) -> Void) {
         pageCount = count
         scrollView.subviews.forEach { $0.removeFromSuperview() }
 
+        var previousImageView: UIImageView?
         for index in 0..<count {
             let imageView = UIImageView().then {
                 $0.contentMode = .scaleAspectFit
@@ -106,12 +112,18 @@ final class ImageCarouselView: UIView {
             imageView.snp.makeConstraints { make in
                 make.top.bottom.equalToSuperview()
                 make.width.equalTo(self)
-                make.leading.equalToSuperview().offset(CGFloat(index) * UIScreen.main.bounds.width)
+                if let previousImageView {
+                    make.leading.equalTo(previousImageView.snp.trailing)
+                } else {
+                    make.leading.equalToSuperview()
+                }
+                if index == count - 1 {
+                    make.trailing.equalToSuperview()
+                }
             }
+            previousImageView = imageView
         }
 
-        layoutIfNeeded()
-        scrollView.contentSize = CGSize(width: bounds.width * CGFloat(count), height: bounds.height)
         updatePage(0)
     }
 

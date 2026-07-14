@@ -21,7 +21,9 @@ final class SignUpInfoViewController: UIViewController {
 
     private let nameField = LabeledTextFieldView(title: "실명", placeholder: "실명을 입력해주세요")
 
-    private let idField = LabeledTextFieldView(title: "아이디", placeholder: "아이디을 입력해주세요")
+    private let idField = LabeledTextFieldView(title: "아이디", placeholder: "아이디을 입력해주세요").then {
+        $0.textField.autocapitalizationType = .none
+    }
 
     private let idCheckButton = UIButton(type: .system).then {
         $0.setTitle("중복확인", for: .normal)
