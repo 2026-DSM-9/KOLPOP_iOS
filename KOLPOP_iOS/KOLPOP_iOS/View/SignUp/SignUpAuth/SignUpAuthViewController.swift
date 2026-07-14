@@ -1,14 +1,11 @@
-//
-//  SignUpViewController.swift
-//  KOLPOP_iOS
-//
-//  Created by Seoyun Jin on 7/13/26.
-//
 import UIKit
 import SnapKit
 import Then
 
 final class SignUpAuthViewController: UIViewController {
+    @objc func nextButtonDidTap() {
+        present(SignUpInfoViewController(), animated: false , completion: nil)
+    }
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -127,16 +124,31 @@ final class SignUpAuthViewController: UIViewController {
             $0.font = .systemFont(ofSize: 16)
             $0.snp.makeConstraints {
                 $0.top.equalTo(inputView.snp.bottom).offset(32)
+                $0.centerX.equalToSuperview()
             }
         }
         let nextButton = UIButton().then {
             $0.setTitle("다음", for: .normal)
             $0.setTitleColor(.white, for: .normal)
             $0.titleLabel?.font = .systemFont(ofSize: 16, weight: .bold)
-            $0.backgroundColor = UIColor(named: "FF5757")
+            $0.backgroundColor = UIColor(named: "99DFF9")
+            $0.addTarget(self, action: #selector(nextButtonDidTap), for: .touchUpInside)
         }
-        let StackView = {
-            UIStackView(arrangedSubviews: [titleView, inputView, codeCheckText])
+        let StackView : UIView = {
+            let views = [titleView, inputView, codeCheckText]
+            let stackView = UIStackView(arrangedSubviews: views).then {
+                $0.axis = .vertical
+                $0.spacing = 36
+                $0.distribution = .fill
+                $0.alignment = .fill
+            }
+            return stackView
+        }()
+        
+        view.addSubview(StackView)
+        
+        StackView.snp.makeConstraints {
+            $0.center.width.equalToSuperview()
         }
     }
 }
