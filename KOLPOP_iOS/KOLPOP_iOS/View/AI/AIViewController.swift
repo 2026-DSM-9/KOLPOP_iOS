@@ -18,12 +18,13 @@ final class AIViewController: UIViewController {
 
     private let aiService = AIService()
 
-    private var messages: [ChatMessage] = [
-        ChatMessage(
-            sender: .ai,
-            text: "안녕하세요! 콜팝 AI 파트너예요.\n원하시는 사업 아이템과 마케팅 종류를 말하시면 그에 맞는 글을 추천해드릴게요!\n\nex. 인스타 글 작성, 태그추천, 포스터 글 작성"
-        )
+    private let greetings = [
+        "안녕하세요! 콜팝 AI 파트너예요.\n원하시는 지역이나 조건을 말씀해주시면 딱 맞는 매물을 추천해드릴게요!\n\nex. 유동인구 많은 1층 매물 찾아줘",
+        "안녕하세요! 콜팝 AI 파트너예요.\n원하시는 사업 아이템과 마케팅 종류를 말하시면 그에 맞는 글을 추천해드릴게요!\n\nex. 인스타 글 작성, 태그추천, 포스터 글 작성",
+        "안녕하세요! 콜팝 AI 파트너예요.\n어떤 업종을 운영하고 싶으신지 말씀해주시면 어울리는 사업 아이템을 추천해드릴게요!\n\nex. 대학가 근처 팝업으로 어떤 아이템이 좋을까?"
     ]
+
+    private var messages: [ChatMessage] = []
 
     private let titleLabel = UILabel().then {
         $0.text = "AI 파트너"
@@ -78,6 +79,7 @@ final class AIViewController: UIViewController {
             animated: false,
             scrollPosition: []
         )
+        resetConversation(for: selectedCategoryIndex)
 
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillChangeFrame(_:)), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
     }
@@ -143,7 +145,7 @@ final class AIViewController: UIViewController {
                     self.receiveReply(reply)
                 case .failure(let error):
                     print("AI 응답 실패: \(error)")
-                    self.receiveReply("AI 응답을 가져오지 못했어요. 잠시 후 다시 시도해주세요.")
+                    self.receiveReply("AI 응답을 가져오지 못했어요.\n(\(error.localizedDescription))")
                 }
             }
         }
@@ -167,6 +169,11 @@ final class AIViewController: UIViewController {
         messages[lastIndex] = ChatMessage(sender: .ai, text: text, showCopyButton: true)
         tableView.reloadData()
         scrollToBottom(animated: true)
+    }
+
+    private func resetConversation(for categoryIndex: Int) {
+        messages = [ChatMessage(sender: .ai, text: greetings[categoryIndex])]
+        tableView.reloadData()
     }
 
     private func scrollToBottom(animated: Bool) {
@@ -200,7 +207,9 @@ extension AIViewController: UICollectionViewDelegateFlowLayout {
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard selectedCategoryIndex != indexPath.item else { return }
         selectedCategoryIndex = indexPath.item
+        resetConversation(for: selectedCategoryIndex)
     }
 }
 

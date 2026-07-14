@@ -19,6 +19,13 @@ final class AIService {
                         completion(.failure(NSError(domain: "AIService", code: -1, userInfo: [NSLocalizedDescriptionKey: "AI 응답 형식이 올바르지 않습니다."])))
                         return
                     }
+
+                    if let success = json["success"] as? Bool, !success {
+                        let errorMessage = (json["error"] as? [String: Any])?["message"] as? String
+                        completion(.failure(NSError(domain: "AIService", code: -1, userInfo: [NSLocalizedDescriptionKey: errorMessage ?? "AI 서버에서 오류가 발생했습니다."])))
+                        return
+                    }
+
                     completion(.success(Self.extractDisplayText(from: json["data"])))
                 } catch {
                     completion(.failure(error))
