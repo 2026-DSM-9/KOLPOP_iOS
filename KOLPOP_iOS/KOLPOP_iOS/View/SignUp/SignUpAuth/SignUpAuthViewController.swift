@@ -4,15 +4,96 @@ import Then
 
 final class SignUpAuthViewController: UIViewController {
     
+    private let phoneTextField = UITextField().then {
+        $0.textColor = UIColor(named: "0F1010")
+        $0.font = .systemFont(ofSize: 16, weight: .regular)
+        $0.attributedPlaceholder = NSAttributedString(
+            string: "전화번호를 입력해 주세요",
+            attributes: [.foregroundColor: UIColor(named: "D9D9D9")!]
+        )
+        $0.layer.borderColor = UIColor(named: "D9D9D9")!.cgColor
+        $0.layer.borderWidth = 1
+        $0.layer.cornerRadius = 25
+        $0.keyboardType = .numberPad
+        
+        let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 52))
+        $0.leftView = paddingView
+        $0.leftViewMode = .always
+    }
+    
+    private let sendCodeButton = UIButton().then {
+        $0.setTitle("인증 코드 발송", for: .normal)
+        $0.setTitleColor(UIColor(named: "767778"), for: .normal)
+        $0.titleLabel?.font = .systemFont(ofSize: 14, weight: .regular)
+        $0.backgroundColor = UIColor(named: "F8F8F8")
+        $0.layer.cornerRadius = 16
+        $0.isEnabled = false
+    }
+    
+    private let codeTextField = UITextField().then {
+        $0.textColor = UIColor(named: "0F1010")
+        $0.font = .systemFont(ofSize: 16, weight: .regular)
+        $0.attributedPlaceholder = NSAttributedString(
+            string: "인증코드를 입력해주세요",
+            attributes: [.foregroundColor: UIColor(named: "D9D9D9")!]
+        )
+        $0.layer.borderColor = UIColor(named: "D9D9D9")!.cgColor
+        $0.layer.borderWidth = 1
+        $0.layer.cornerRadius = 25
+        $0.keyboardType = .numberPad
+        
+        let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 52))
+        $0.leftView = paddingView
+        $0.leftViewMode = .always
+    }
+    
+    private let nextButton = UIButton().then {
+        $0.setTitle("다음", for: .normal)
+        $0.setTitleColor(.white, for: .normal)
+        $0.titleLabel?.font = .systemFont(ofSize: 16, weight: .bold)
+        $0.backgroundColor = UIColor(named: "99DFF9")
+        $0.layer.cornerRadius = 26
+        $0.isEnabled = false
+    }
+    
     @objc func nextButtonDidTap() {
         let signUpInfoViewController = SignUpInfoViewController()
         signUpInfoViewController.modalPresentationStyle = .fullScreen
         present(signUpInfoViewController, animated: false, completion: nil)
     }
     
+    @objc private func textFieldDidChange() {
+        let isPhoneNotEmpty = !(phoneTextField.text?.isEmpty ?? true)
+        let isCodeNotEmpty = !(codeTextField.text?.isEmpty ?? true)
+        
+        if isPhoneNotEmpty {
+            sendCodeButton.backgroundColor = UIColor(named: "BFEBFB")
+            sendCodeButton.setTitleColor(UIColor(named: "00688F"), for: .normal)
+            sendCodeButton.isEnabled = true
+        } else {
+            sendCodeButton.backgroundColor = UIColor(named: "F8F8F8")
+            sendCodeButton.setTitleColor(UIColor(named: "767778"), for: .normal)
+            sendCodeButton.isEnabled = false
+        }
+        
+        if isPhoneNotEmpty && isCodeNotEmpty {
+            nextButton.backgroundColor = UIColor(named: "33BEF2")
+            nextButton.setTitleColor(.white, for: .normal)
+            nextButton.isEnabled = true
+        } else {
+            nextButton.backgroundColor = UIColor(named: "99DFF9")
+            nextButton.setTitleColor(.white, for: .normal)
+            nextButton.isEnabled = false
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
+        
+        phoneTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+        codeTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+        nextButton.addTarget(self, action: #selector(nextButtonDidTap), for: .touchUpInside)
         
         let arrow = UIButton().then {
             $0.setImage(UIImage(systemName: "arrow.left"), for: .normal)
@@ -41,47 +122,11 @@ final class SignUpAuthViewController: UIViewController {
             $0.textColor = UIColor(named: "A3A4A5")
             $0.font = .systemFont(ofSize: 16, weight: .regular)
         }
-        let phoneTextField = UITextField().then {
-            $0.textColor = UIColor(named: "0F1010")
-            $0.font = .systemFont(ofSize: 16, weight: .regular)
-            $0.attributedPlaceholder = NSAttributedString(
-                string: "전화번호를 입력해 주세요",
-                attributes: [.foregroundColor: UIColor(named: "D9D9D9")!]
-            )
-            $0.layer.borderColor = UIColor(named: "D9D9D9")!.cgColor
-            $0.layer.borderWidth = 1
-            $0.layer.cornerRadius = 25
-            
-            let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 52))
-            $0.leftView = paddingView
-            $0.leftViewMode = .always
-        }
-        let sendCodeButton = UIButton().then {
-            $0.setTitle("인증 코드 발송", for: .normal)
-            $0.setTitleColor(UIColor(named: "767778"), for: .normal)
-            $0.titleLabel?.font = .systemFont(ofSize: 14, weight: .regular)
-            $0.backgroundColor = UIColor(named: "F8F8F8")
-            $0.layer.cornerRadius = 16
-        }
+        
         let codeTitle = UILabel().then {
             $0.text = "인증코드"
             $0.textColor = UIColor(named: "A3A4A5")
             $0.font = .systemFont(ofSize: 16, weight: .regular)
-        }
-        let codeTextField = UITextField().then {
-            $0.textColor = UIColor(named: "0F1010")
-            $0.font = .systemFont(ofSize: 16, weight: .regular)
-            $0.attributedPlaceholder = NSAttributedString(
-                string: "인증코드를 입력해주세요",
-                attributes: [.foregroundColor: UIColor(named: "D9D9D9")!]
-            )
-            $0.layer.borderColor = UIColor(named: "D9D9D9")!.cgColor
-            $0.layer.borderWidth = 1
-            $0.layer.cornerRadius = 25
-            
-            let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 52))
-            $0.leftView = paddingView
-            $0.leftViewMode = .always
         }
         
         let titleView = UIView().then {
@@ -155,19 +200,11 @@ final class SignUpAuthViewController: UIViewController {
             $0.leading.trailing.equalToSuperview()
         }
         
-        let nextButton = UIButton().then {
-            $0.setTitle("다음", for: .normal)
-            $0.setTitleColor(.white, for: .normal)
-            $0.titleLabel?.font = .systemFont(ofSize: 16, weight: .bold)
-            $0.backgroundColor = UIColor(named: "99DFF9")
-            $0.layer.cornerRadius = 26
-            $0.addTarget(self, action: #selector(nextButtonDidTap), for: .touchUpInside)
-            view.addSubview($0)
-            $0.snp.makeConstraints {
-                $0.leading.trailing.equalToSuperview().inset(32)
-                $0.top.equalTo(stackView.snp.bottom).offset(36)
-                $0.height.equalTo(52)
-            }
+        view.addSubview(nextButton)
+        nextButton.snp.makeConstraints {
+            $0.leading.trailing.equalToSuperview().inset(32)
+            $0.top.equalTo(stackView.snp.bottom).offset(36)
+            $0.height.equalTo(52)
         }
     }
 }

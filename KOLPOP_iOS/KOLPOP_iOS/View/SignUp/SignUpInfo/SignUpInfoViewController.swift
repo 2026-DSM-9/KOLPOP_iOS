@@ -2,13 +2,157 @@ import UIKit
 import SnapKit
 import Then
 
-class SignUpInfoViewController : UIViewController {
+final class SignUpInfoViewController: UIViewController {
+    
+    private let nameTextField = UITextField().then {
+        $0.textColor = UIColor(named: "0F1010")
+        $0.font = .systemFont(ofSize: 16, weight: .regular)
+        $0.attributedPlaceholder = NSAttributedString(
+            string: "실명을 입력해주세요",
+            attributes: [.foregroundColor: UIColor(named: "D9D9D9")!]
+        )
+        $0.layer.borderColor = UIColor(named: "D9D9D9")!.cgColor
+        $0.layer.borderWidth = 1
+        $0.layer.cornerRadius = 25
+        
+        let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 52))
+        $0.leftView = paddingView
+        $0.leftViewMode = .always
+    }
+    
+    private let idTextField = UITextField().then {
+        $0.textColor = UIColor(named: "0F1010")
+        $0.font = .systemFont(ofSize: 16, weight: .regular)
+        $0.attributedPlaceholder = NSAttributedString(
+            string: "아이디를 입력해주세요",
+            attributes: [.foregroundColor: UIColor(named: "D9D9D9")!]
+        )
+        $0.layer.borderColor = UIColor(named: "D9D9D9")!.cgColor
+        $0.layer.borderWidth = 1
+        $0.layer.cornerRadius = 25
+        
+        let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 52))
+        $0.leftView = paddingView
+        $0.leftViewMode = .always
+    }
+    
+    private let idCheckButton = UIButton().then {
+        $0.setTitle("중복확인", for: .normal)
+        $0.setTitleColor(UIColor(named: "767778"), for: .normal)
+        $0.backgroundColor = UIColor(named: "F8F8F8")
+        $0.titleLabel?.font = .systemFont(ofSize: 14, weight: .regular)
+        $0.layer.cornerRadius = 16
+        $0.isEnabled = false
+    }
+    
+    private let passwordTextField = UITextField().then {
+        $0.textColor = UIColor(named: "0F1010")
+        $0.font = .systemFont(ofSize: 16, weight: .regular)
+        $0.attributedPlaceholder = NSAttributedString(
+            string: "비밀번호를 입력해주세요",
+            attributes: [.foregroundColor: UIColor(named: "D9D9D9")!]
+        )
+        $0.layer.borderColor = UIColor(named: "D9D9D9")!.cgColor
+        $0.layer.borderWidth = 1
+        $0.layer.cornerRadius = 25
+        $0.isSecureTextEntry = true
+        
+        let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 52))
+        $0.leftView = paddingView
+        $0.leftViewMode = .always
+    }
+    
+    private let passwordTextFieldIcon = UIButton().then {
+        $0.setImage(UIImage(systemName: "eye.slash"), for: .normal)
+        $0.tintColor = UIColor(named: "D9D9D9")
+    }
+    
+    private let passwordCheckTextField = UITextField().then {
+        $0.textColor = UIColor(named: "0F1010")
+        $0.font = .systemFont(ofSize: 16, weight: .regular)
+        $0.attributedPlaceholder = NSAttributedString(
+            string: "비밀번호를 한 번 더 입력해주세요",
+            attributes: [.foregroundColor: UIColor(named: "D9D9D9")!]
+        )
+        $0.layer.borderColor = UIColor(named: "D9D9D9")!.cgColor
+        $0.layer.borderWidth = 1
+        $0.layer.cornerRadius = 25
+        $0.isSecureTextEntry = true
+        
+        let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 52))
+        $0.leftView = paddingView
+        $0.leftViewMode = .always
+    }
+    
+    private let passwordCheckTextFieldIcon = UIButton().then {
+        $0.setImage(UIImage(systemName: "eye.slash"), for: .normal)
+        $0.tintColor = UIColor(named: "D9D9D9")
+    }
+    
+    private let signUpButton = UIButton().then {
+        $0.setTitle("회원가입", for: .normal)
+        $0.setTitleColor(UIColor(named: "767778"), for: .normal)
+        $0.backgroundColor = UIColor(named: "F8F8F8")
+        $0.layer.cornerRadius = 25
+        $0.titleLabel?.font = .systemFont(ofSize: 16, weight: .bold)
+        $0.isEnabled = false
+    }
+    
     @objc func arrowTapped() {
         self.presentingViewController?.dismiss(animated: false, completion: nil)
     }
+    
+    @objc private func textFieldDidChange() {
+        let isNameNotEmpty = !(nameTextField.text?.isEmpty ?? true)
+        let isIdNotEmpty = !(idTextField.text?.isEmpty ?? true)
+        let isPasswordNotEmpty = !(passwordTextField.text?.isEmpty ?? true)
+        let isPasswordCheckNotEmpty = !(passwordCheckTextField.text?.isEmpty ?? true)
+        
+        if isIdNotEmpty {
+            idCheckButton.backgroundColor = UIColor(named: "BFEBFB")
+            idCheckButton.setTitleColor(UIColor(named: "00688F"), for: .normal)
+            idCheckButton.isEnabled = true
+        } else {
+            idCheckButton.backgroundColor = UIColor(named: "F8F8F8")
+            idCheckButton.setTitleColor(UIColor(named: "767778"), for: .normal)
+            idCheckButton.isEnabled = false
+        }
+        
+        if isNameNotEmpty && isIdNotEmpty && isPasswordNotEmpty && isPasswordCheckNotEmpty {
+            signUpButton.backgroundColor = UIColor(named: "33BEF2")
+            signUpButton.setTitleColor(.white, for: .normal)
+            signUpButton.isEnabled = true
+        } else {
+            signUpButton.backgroundColor = UIColor(named: "99DFF9")
+            signUpButton.setTitleColor(.white, for: .normal)
+            signUpButton.isEnabled = false
+        }
+    }
+    
+    @objc private func togglePasswordVisibility(_ sender: UIButton) {
+        if sender == passwordTextFieldIcon {
+            passwordTextField.isSecureTextEntry.toggle()
+            let imageName = passwordTextField.isSecureTextEntry ? "eye.slash" : "eye"
+            passwordTextFieldIcon.setImage(UIImage(systemName: imageName), for: .normal)
+        } else if sender == passwordCheckTextFieldIcon {
+            passwordCheckTextField.isSecureTextEntry.toggle()
+            let imageName = passwordCheckTextField.isSecureTextEntry ? "eye.slash" : "eye"
+            passwordCheckTextFieldIcon.setImage(UIImage(systemName: imageName), for: .normal)
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
+        
+        nameTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+        idTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+        passwordTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+        passwordCheckTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+        
+        passwordTextFieldIcon.addTarget(self, action: #selector(togglePasswordVisibility), for: .touchUpInside)
+        passwordCheckTextFieldIcon.addTarget(self, action: #selector(togglePasswordVisibility), for: .touchUpInside)
+        
         let arrow = UIButton().then {
             $0.setImage(UIImage(systemName: "arrow.left"), for: .normal)
             $0.tintColor = UIColor(named: "0F1010")
@@ -37,48 +181,11 @@ class SignUpInfoViewController : UIViewController {
             $0.font = .systemFont(ofSize: 16)
             $0.textColor = UIColor(named: "A3A4A5")
         }
-        let nameTextField = UITextField().then {
-            $0.textColor = UIColor(named: "0F1010")
-            $0.font = .systemFont(ofSize: 16, weight: .regular)
-            $0.attributedPlaceholder = NSAttributedString(
-                string: "실명을 입력해주세요",
-                attributes: [.foregroundColor: UIColor(named: "D9D9D9")!]
-            )
-            $0.layer.borderColor = UIColor(named: "D9D9D9")!.cgColor
-            $0.layer.borderWidth = 1
-            $0.layer.cornerRadius = 25
-            
-            let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 52))
-            $0.leftView = paddingView
-            $0.leftViewMode = .always
-        }
         
         let idTitle = UILabel().then {
             $0.text = "아이디"
             $0.font = .systemFont(ofSize: 16)
             $0.textColor = UIColor(named: "A3A4A5")
-        }
-        let idTextField = UITextField().then {
-            $0.textColor = UIColor(named: "0F1010")
-            $0.font = .systemFont(ofSize: 16, weight: .regular)
-            $0.attributedPlaceholder = NSAttributedString(
-                string: "아이디를 입력해주세요",
-                attributes: [.foregroundColor: UIColor(named: "D9D9D9")!]
-            )
-            $0.layer.borderColor = UIColor(named: "D9D9D9")!.cgColor
-            $0.layer.borderWidth = 1
-            $0.layer.cornerRadius = 25
-            
-            let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 52))
-            $0.leftView = paddingView
-            $0.leftViewMode = .always
-        }
-        let idCheckButton = UIButton().then {
-            $0.setTitle("중복확인", for: .normal)
-            $0.setTitleColor(UIColor(named: "767778"), for: .normal)
-            $0.backgroundColor = UIColor(named: "F8F8F8")
-            $0.titleLabel?.font = .systemFont(ofSize: 14, weight: .regular)
-            $0.layer.cornerRadius = 16
         }
         
         let passwordTitle = UILabel().then {
@@ -86,62 +193,16 @@ class SignUpInfoViewController : UIViewController {
             $0.font = .systemFont(ofSize: 16)
             $0.textColor = UIColor(named: "A3A4A5")
         }
-        let passwordTextField = UITextField().then {
-            $0.textColor = UIColor(named: "0F1010")
-            $0.font = .systemFont(ofSize: 16, weight: .regular)
-            $0.attributedPlaceholder = NSAttributedString(
-                string: "비밀번호를 입력해주세요",
-                attributes: [.foregroundColor: UIColor(named: "D9D9D9")!]
-            )
-            $0.layer.borderColor = UIColor(named: "D9D9D9")!.cgColor
-            $0.layer.borderWidth = 1
-            $0.layer.cornerRadius = 25
-            
-            let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 52))
-            $0.leftView = paddingView
-            $0.leftViewMode = .always
-        }
         let passwordRullText = UILabel().then {
             $0.text = "비밀번호 형식은 ~"
             $0.font = .systemFont(ofSize: 14)
             $0.textColor = UIColor(named: "00AEEF")
-        }
-        let passwordTextFieldIcon = UIButton().then {
-            $0.setImage(UIImage(systemName: "eye.slash"), for: .normal)
-            $0.tintColor = UIColor(named: "D9D9D9")
         }
         
         let passwordCheckTitle = UILabel().then {
             $0.text = "비밀번호 확인"
             $0.font = .systemFont(ofSize: 16)
             $0.textColor = UIColor(named: "A3A4A5")
-        }
-        let passwordCheckTextField = UITextField().then {
-            $0.textColor = UIColor(named: "0F1010")
-            $0.font = .systemFont(ofSize: 16, weight: .regular)
-            $0.attributedPlaceholder = NSAttributedString(
-                string: "비밀번호를 한 번 더 입력해주세요",
-                attributes: [.foregroundColor: UIColor(named: "D9D9D9")!]
-            )
-            $0.layer.borderColor = UIColor(named: "D9D9D9")!.cgColor
-            $0.layer.borderWidth = 1
-            $0.layer.cornerRadius = 25
-            
-            let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 52))
-            $0.leftView = paddingView
-            $0.leftViewMode = .always
-        }
-        let passwordCheckTextFieldIcon = UIButton().then {
-            $0.setImage(UIImage(systemName: "eye.slash"), for: .normal)
-            $0.tintColor = UIColor(named: "D9D9D9")
-        }
-        
-        let signUpButton = UIButton().then {
-            $0.setTitle("회원가입", for: .normal)
-            $0.setTitleColor(.white, for: .normal)
-            $0.backgroundColor = UIColor(named: "99DFF9")
-            $0.layer.cornerRadius = 25
-            $0.titleLabel?.font = .systemFont(ofSize: 16, weight: .bold)
         }
         
         let scrollView = UIScrollView()
@@ -252,10 +313,10 @@ class SignUpInfoViewController : UIViewController {
         let signUpButtonView = UIView().then {
             $0.addSubview(signUpButton)
             signUpButton.snp.makeConstraints {
-                $0.top.equalToSuperview() // ⭐️ 상단 고정 추가
+                $0.top.equalToSuperview()
                 $0.height.equalTo(52)
                 $0.leading.trailing.equalToSuperview().inset(32)
-                $0.bottom.equalToSuperview().inset(40) // ⭐️ 밑부분을 완전히 닫아줌 (스크롤 하단 여백 확보)
+                $0.bottom.equalToSuperview().inset(40)
             }
         }
         
