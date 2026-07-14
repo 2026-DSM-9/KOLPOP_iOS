@@ -9,8 +9,9 @@ import Then
 
 final class SignUpAuthViewController: UIViewController {
 
-    // TODO: 실제 인증 API 연동 전까지는 이 코드로만 인증에 성공한 것으로 처리한다.
-    private static let mockValidVerificationCode = "123456"
+    private let authService = AuthService()
+    private var isSendingCode = false
+    private var isVerifyingCode = false
 
     private let backButton = UIButton(type: .system).then {
         $0.setImage(UIImage(systemName: "arrow.left"), for: .normal)
@@ -111,6 +112,8 @@ final class SignUpAuthViewController: UIViewController {
     }
 
     @objc private func fieldsDidChange() {
+        isSendingCode = false
+        isVerifyingCode = false
         statusLabel.isHidden = true
         updateSendCodeButtonStyle()
         updateNextButtonStyle()
@@ -118,31 +121,80 @@ final class SignUpAuthViewController: UIViewController {
 
     private func updateSendCodeButtonStyle() {
         let isPhoneFilled = !(phoneField.textField.text ?? "").isEmpty
-        sendCodeButton.isEnabled = isPhoneFilled
-        sendCodeButton.backgroundColor = UIColor(named: isPhoneFilled ? "BFEBFB" : "F8F8F8")
-        sendCodeButton.setTitleColor(UIColor(named: isPhoneFilled ? "00688F" : "767778"), for: .normal)
+        let isEnabled = isPhoneFilled && !isSendingCode
+        sendCodeButton.isEnabled = isEnabled
+        sendCodeButton.backgroundColor = UIColor(named: isEnabled ? "BFEBFB" : "F8F8F8")
+        sendCodeButton.setTitleColor(UIColor(named: isEnabled ? "00688F" : "767778"), for: .normal)
     }
 
     private func updateNextButtonStyle() {
         let isPhoneFilled = !(phoneField.textField.text ?? "").isEmpty
         let isCodeFilled = !(codeField.textField.text ?? "").isEmpty
-        let isReady = isPhoneFilled && isCodeFilled
+        let isReady = isPhoneFilled && isCodeFilled && !isVerifyingCode
         nextButton.isEnabled = isReady
         nextButton.backgroundColor = UIColor(named: isReady ? "33BEF2" : "99DFF9")
     }
 
     @objc private func sendCodeTapped() {
-        // TODO: 실제 인증 코드 발송 API 연동 예정
+        guard let phone = phoneField.textField.text, !phone.isEmpty else { return }
+
+        isSendingCode = true
+        updateSendCodeButtonStyle()
+        statusLabel.text = "인증번호를 발송 중입니다"
+        statusLabel.textColor = UIColor(named: "767778")
+        statusLabel.isHidden = false
+
+        authService.sendVerificationCode(phone: phone) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self, self.phoneField.textField.text == phone else { return }
+
+                self.isSendingCode = false
+                switch result {
+                case .success(true):
+                    self.statusLabel.text = "인증번호를 발송했습니다"
+                    self.statusLabel.textColor = .systemGreen
+                case .success(false), .failure:
+                    self.statusLabel.text = "인증번호 발송에 실패했습니다"
+                    self.statusLabel.textColor = .systemRed
+                }
+                self.updateSendCodeButtonStyle()
+            }
+        }
     }
 
     @objc private func nextTapped() {
-        guard codeField.textField.text == Self.mockValidVerificationCode else {
-            statusLabel.text = "인증코드를 확인해주세요"
-            statusLabel.isHidden = false
-            return
-        }
+        guard
+            let phone = phoneField.textField.text, !phone.isEmpty,
+            let code = codeField.textField.text, !code.isEmpty
+        else { return }
 
-        let phone = phoneField.textField.text ?? ""
-        navigationController?.pushViewController(SignUpInfoViewController(verifiedPhone: phone), animated: true)
+        isVerifyingCode = true
+        updateNextButtonStyle()
+        statusLabel.text = "인증번호를 확인 중입니다"
+        statusLabel.textColor = UIColor(named: "767778")
+        statusLabel.isHidden = false
+
+        authService.verifyVerificationCode(phone: phone, code: code) { [weak self] result in
+            DispatchQueue.main.async {
+                guard
+                    let self,
+                    self.phoneField.textField.text == phone,
+                    self.codeField.textField.text == code
+                else { return }
+
+                self.isVerifyingCode = false
+                switch result {
+                case .success(true):
+                    self.navigationController?.pushViewController(
+                        SignUpInfoViewController(verifiedPhone: phone),
+                        animated: true
+                    )
+                case .success(false), .failure:
+                    self.statusLabel.text = "인증코드를 확인해주세요"
+                    self.statusLabel.textColor = .systemRed
+                }
+                self.updateNextButtonStyle()
+            }
+        }
     }
 }
