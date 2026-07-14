@@ -134,7 +134,7 @@ final class SearchViewController: UIViewController {
         resultHeaderView.addSubview(resultIconImageView)
         resultHeaderView.addSubview(resultCountLabel)
 
-        [titleLabel, searchFieldView, suggestionTableView, mapContainerView, resultHeaderView, tableView, emptyLabel].forEach {
+        [titleLabel, searchFieldView, mapContainerView, resultHeaderView, tableView, emptyLabel, suggestionTableView].forEach {
             view.addSubview($0)
         }
 
