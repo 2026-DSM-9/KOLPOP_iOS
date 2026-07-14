@@ -193,16 +193,19 @@ final class SearchViewController: UIViewController {
                 switch result {
                 case .success(let responses):
                     self.visibleListings = responses.map(MapListing.init(response:))
-                    self.mapView.removeAnnotations(self.mapView.annotations)
-                    self.mapView.addAnnotations(self.visibleListings.map { ListingAnnotation(listing: $0) })
-
-                    self.resultCountLabel.text = "검색 결과 \(self.visibleListings.count)"
-                    self.emptyLabel.isHidden = !self.visibleListings.isEmpty
-                    self.tableView.isHidden = self.visibleListings.isEmpty
-                    self.tableView.reloadData()
                 case .failure(let error):
                     print("지도 매물 조회 실패: \(error)")
+                    self.visibleListings = []
                 }
+
+                self.selectedListingID = nil
+                self.mapView.removeAnnotations(self.mapView.annotations)
+                self.mapView.addAnnotations(self.visibleListings.map { ListingAnnotation(listing: $0) })
+
+                self.resultCountLabel.text = "검색 결과 \(self.visibleListings.count)"
+                self.emptyLabel.isHidden = !self.visibleListings.isEmpty
+                self.tableView.isHidden = self.visibleListings.isEmpty
+                self.tableView.reloadData()
             }
         }
     }
