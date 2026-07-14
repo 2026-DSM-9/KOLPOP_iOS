@@ -108,6 +108,22 @@ final class ListingService {
         }
     }
 
+    func fetchAddressSuggestions(keyword: String, limit: Int? = nil, completion: @escaping (Result<[ListingAddressSuggestionResponse], Error>) -> Void) {
+        provider.request(.addressSuggestions(keyword: keyword, limit: limit)) { result in
+            switch result {
+            case .success(let response):
+                do {
+                    let decoded = try JSONDecoder().decode(ApiResponse<[ListingAddressSuggestionResponse]>.self, from: response.data)
+                    completion(.success(decoded.data ?? []))
+                } catch {
+                    completion(.failure(error))
+                }
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+
     func fetchDetail(listingId: Int, completion: @escaping (Result<ListingDetailResponse, Error>) -> Void) {
         provider.request(.detail(listingId: listingId)) { result in
             switch result {

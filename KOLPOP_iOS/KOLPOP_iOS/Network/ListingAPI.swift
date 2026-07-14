@@ -15,6 +15,7 @@ enum ListingAPI {
     case liked
     case like(listingId: Int)
     case unlike(listingId: Int)
+    case addressSuggestions(keyword: String, limit: Int?)
 }
 
 extension ListingAPI: TargetType {
@@ -37,6 +38,8 @@ extension ListingAPI: TargetType {
             return "/listings/liked"
         case .like(let listingId), .unlike(let listingId):
             return "/listings/\(listingId)/likes"
+        case .addressSuggestions:
+            return "/listings/address-suggestions"
         }
     }
 
@@ -89,6 +92,13 @@ extension ListingAPI: TargetType {
 
         case .liked, .like, .unlike:
             return .requestPlain
+
+        case let .addressSuggestions(keyword, limit):
+            var parameters: [String: Any] = ["keyword": keyword]
+            if let limit {
+                parameters["limit"] = limit
+            }
+            return .requestParameters(parameters: parameters, encoding: URLEncoding.default)
         }
     }
 

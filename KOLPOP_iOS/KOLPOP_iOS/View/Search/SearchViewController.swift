@@ -10,20 +10,13 @@ import Then
 
 final class SearchViewController: UIViewController {
 
-    // TODO: 실제 주소 검색은 주소 API 연동 후 대체. 지금은 목업 자동완성 데이터를 사용한다.
-    private let mockSuggestions = [
-        "대전광역시 어쩌구",
-        "대전광역시 어쩌구 저쩌구",
-        "대전광역시 어쩌구 저쩌구 어쩌구",
-        "대전광역시 어쩌구 저쩌구",
-        "대전광역시 어쩌구 저쩌구 어쩌구"
-    ]
-
     private let listingService = ListingService()
     private var mapListings: [MapListing] = []
     private var nearbyListings: [ListingSummary] = []
+    private var addressSuggestions: [ListingAddressSuggestionResponse] = []
     private var selectedListingID: String?
     private var mapFetchDebounceTimer: Timer?
+    private var suggestionDebounceTimer: Timer?
     private var hasAppearedBefore = false
 
     private let initialRegion = MKCoordinateRegion(
@@ -123,6 +116,8 @@ final class SearchViewController: UIViewController {
 
     private func resetToDefaultState() {
         mapFetchDebounceTimer?.invalidate()
+        suggestionDebounceTimer?.invalidate()
+        addressSuggestions = []
         searchFieldView.textField.text = nil
         searchFieldView.textField.resignFirstResponder()
         suggestionTableView.isHidden = true
@@ -191,17 +186,47 @@ final class SearchViewController: UIViewController {
     }
 
     @objc private func searchTextChanged() {
-        let hasText = !(searchFieldView.textField.text ?? "").isEmpty
-        suggestionTableView.isHidden = !hasText
-        suggestionTableView.snp.updateConstraints { make in
-            make.height.equalTo(hasText ? mockSuggestions.count * 44 : 0)
+        let keyword = searchFieldView.textField.text ?? ""
+
+        suggestionDebounceTimer?.invalidate()
+        if keyword.isEmpty {
+            addressSuggestions = []
+            updateSuggestionTable()
+        } else {
+            suggestionDebounceTimer = Timer.scheduledTimer(withTimeInterval: 0.3, repeats: false) { [weak self] _ in
+                self?.fetchAddressSuggestions(keyword: keyword)
+            }
         }
-        suggestionTableView.reloadData()
 
         mapFetchDebounceTimer?.invalidate()
         mapFetchDebounceTimer = Timer.scheduledTimer(withTimeInterval: 0.4, repeats: false) { [weak self] _ in
             self?.fetchMapListings()
         }
+    }
+
+    private func fetchAddressSuggestions(keyword: String) {
+        listingService.fetchAddressSuggestions(keyword: keyword, limit: 5) { [weak self] result in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let suggestions):
+                    self.addressSuggestions = suggestions
+                case .failure(let error):
+                    print("주소 추천 검색 실패: \(error)")
+                    self.addressSuggestions = []
+                }
+                self.updateSuggestionTable()
+            }
+        }
+    }
+
+    private func updateSuggestionTable() {
+        let hasSuggestions = !addressSuggestions.isEmpty
+        suggestionTableView.isHidden = !hasSuggestions
+        suggestionTableView.snp.updateConstraints { make in
+            make.height.equalTo(hasSuggestions ? addressSuggestions.count * 44 : 0)
+        }
+        suggestionTableView.reloadData()
     }
 
     private func fetchMapListings() {
@@ -314,13 +339,13 @@ extension SearchViewController: MKMapViewDelegate {
 extension SearchViewController: UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        tableView === suggestionTableView ? mockSuggestions.count : nearbyListings.count
+        tableView === suggestionTableView ? addressSuggestions.count : nearbyListings.count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if tableView === suggestionTableView {
             let cell = tableView.dequeueReusableCell(withIdentifier: "SuggestionCell", for: indexPath)
-            cell.textLabel?.text = mockSuggestions[indexPath.row]
+            cell.textLabel?.text = addressSuggestions[indexPath.row].fullAddress
             cell.textLabel?.font = .paperlogy(.regular, size: 15)
             cell.selectionStyle = .default
             return cell
@@ -344,10 +369,12 @@ extension SearchViewController: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if tableView === suggestionTableView {
-            // TODO: 실제 주소 API로 좌표 조회 후 지도 이동
-            searchFieldView.textField.text = mockSuggestions[indexPath.row]
+            // 주소 추천 API는 좌표를 내려주지 않아 지도를 이동시키지는 못하고, 키워드로 목록만 다시 조회한다.
+            searchFieldView.textField.text = addressSuggestions[indexPath.row].fullAddress
             searchFieldView.textField.resignFirstResponder()
-            searchTextChanged()
+            addressSuggestions = []
+            updateSuggestionTable()
+            fetchMapListings()
             return
         }
 
