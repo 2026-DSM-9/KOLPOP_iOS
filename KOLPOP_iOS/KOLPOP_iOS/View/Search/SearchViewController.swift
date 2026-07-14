@@ -20,7 +20,8 @@ final class SearchViewController: UIViewController {
     ]
 
     private let listingService = ListingService()
-    private var visibleListings: [MapListing] = []
+    private var mapListings: [MapListing] = []
+    private var nearbyListings: [ListingSummary] = []
     private var selectedListingID: String?
     private var mapFetchDebounceTimer: Timer?
     private var hasAppearedBefore = false
@@ -211,39 +212,41 @@ final class SearchViewController: UIViewController {
         let maxLon = region.center.longitude + region.span.longitudeDelta / 2
         let keyword = searchFieldView.textField.text
 
-        listingService.fetchMapListings(minLatitude: minLat, maxLatitude: maxLat, minLongitude: minLon, maxLongitude: maxLon, keyword: keyword) { [weak self] result in
+        listingService.fetchDiscovery(minLatitude: minLat, maxLatitude: maxLat, minLongitude: minLon, maxLongitude: maxLon, keyword: keyword) { [weak self] result in
             guard let self else { return }
             DispatchQueue.main.async {
                 switch result {
-                case .success(let responses):
-                    self.visibleListings = responses.map(MapListing.init(response:))
+                case .success(let discovery):
+                    self.mapListings = discovery.map.listings.map(MapListing.init(response:))
+                    self.nearbyListings = discovery.nearbyListings.listings.map(ListingSummary.init(response:))
                 case .failure(let error):
                     print("지도 매물 조회 실패: \(error)")
-                    self.visibleListings = []
+                    self.mapListings = []
+                    self.nearbyListings = []
                 }
 
-                if let selectedListingID = self.selectedListingID, !self.visibleListings.contains(where: { $0.id == selectedListingID }) {
+                if let selectedListingID = self.selectedListingID, !self.nearbyListings.contains(where: { $0.id == selectedListingID }) {
                     self.selectedListingID = nil
                 }
                 self.mapView.removeAnnotations(self.mapView.annotations)
-                self.mapView.addAnnotations(self.visibleListings.map { ListingAnnotation(listing: $0) })
+                self.mapView.addAnnotations(self.mapListings.map { ListingAnnotation(listing: $0) })
 
-                self.resultCountLabel.text = "검색 결과 \(self.visibleListings.count)"
-                self.emptyLabel.isHidden = !self.visibleListings.isEmpty
-                self.tableView.isHidden = self.visibleListings.isEmpty
+                self.resultCountLabel.text = "검색 결과 \(self.nearbyListings.count)"
+                self.emptyLabel.isHidden = !self.nearbyListings.isEmpty
+                self.tableView.isHidden = self.nearbyListings.isEmpty
                 self.tableView.reloadData()
             }
         }
     }
 
-    private func startChat(with listing: MapListing) {
-        // TODO: 실제 채팅방 생성/조회 API 연동 전까지는 매물 정보로 새 ChatRoom을 구성한다.
+    private func startChat(with listing: ListingSummary) {
+        // TODO: 실제 채팅방 생성/조회 API 연동 전까지는 매물 정보로 새 ChatRoom을 구성한다. landlordId가 이 응답에 없어 실제 방 생성은 아직 불가능하다.
         let room = ChatRoom(
             id: listing.id,
             imageURL: listing.imageURL,
             title: listing.title,
             lastMessage: "",
-            senderName: listing.landlordName,
+            senderName: "",
             status: .inProgress,
             unreadCount: 0
         )
@@ -255,27 +258,27 @@ final class SearchViewController: UIViewController {
         selectedListingID = id
 
         var rowsToReload: [IndexPath] = []
-        if let previousID, previousID != id, let previousRow = visibleListings.firstIndex(where: { $0.id == previousID }) {
+        if let previousID, previousID != id, let previousRow = nearbyListings.firstIndex(where: { $0.id == previousID }) {
             rowsToReload.append(IndexPath(row: previousRow, section: 0))
         }
-        if let newRow = visibleListings.firstIndex(where: { $0.id == id }) {
+        if let newRow = nearbyListings.firstIndex(where: { $0.id == id }) {
             rowsToReload.append(IndexPath(row: newRow, section: 0))
         }
 
         tableView.performBatchUpdates {
             tableView.reloadRows(at: rowsToReload, with: .automatic)
         } completion: { [weak self] _ in
-            guard let self, let row = self.visibleListings.firstIndex(where: { $0.id == id }) else { return }
+            guard let self, let row = self.nearbyListings.firstIndex(where: { $0.id == id }) else { return }
             self.tableView.scrollToRow(at: IndexPath(row: row, section: 0), at: .middle, animated: true)
         }
-
-        guard let listing = visibleListings.first(where: { $0.id == id }) else { return }
-        mapView.setCenter(listing.coordinate, animated: true)
 
         for case let annotation as ListingAnnotation in mapView.annotations {
             let view = mapView.view(for: annotation) as? PriceAnnotationView
             view?.setHighlighted(annotation.listing.id == id)
         }
+
+        guard let listing = mapListings.first(where: { $0.id == id }) else { return }
+        mapView.setCenter(listing.coordinate, animated: true)
     }
 }
 
@@ -311,7 +314,7 @@ extension SearchViewController: MKMapViewDelegate {
 extension SearchViewController: UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        tableView === suggestionTableView ? mockSuggestions.count : visibleListings.count
+        tableView === suggestionTableView ? mockSuggestions.count : nearbyListings.count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -323,9 +326,9 @@ extension SearchViewController: UITableViewDataSource {
             return cell
         }
 
-        let listing = visibleListings[indexPath.row]
+        let listing = nearbyListings[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: ListingSummaryCell.reuseIdentifier, for: indexPath) as! ListingSummaryCell
-        cell.configure(with: listing.summary, isSelected: listing.id == selectedListingID)
+        cell.configure(with: listing, isSelected: listing.id == selectedListingID)
         cell.onInquireTapped = { [weak self] in
             self?.startChat(with: listing)
         }
@@ -349,6 +352,6 @@ extension SearchViewController: UITableViewDelegate {
         }
 
         tableView.deselectRow(at: indexPath, animated: true)
-        selectListing(id: visibleListings[indexPath.row].id)
+        selectListing(id: nearbyListings[indexPath.row].id)
     }
 }

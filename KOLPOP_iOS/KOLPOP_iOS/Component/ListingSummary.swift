@@ -16,3 +16,18 @@ struct ListingSummary {
     let price: String
     let likeCount: Int
 }
+
+extension ListingSummary {
+
+    /// ListingSummaryResponse에는 실제 category(업종) 정보가 없어 status.label로 대체한다.
+    init(response: ListingSummaryResponse) {
+        id = String(response.listingId)
+        imageURL = response.thumbnailUrl.flatMap(URL.init(string:))
+        title = response.title
+        address = response.address
+        sizeInfo = String(format: "%.1fm²", response.area)
+        category = response.status.label
+        price = "일 \(response.dailyFee.formattedWithComma)원"
+        likeCount = response.likeCount
+    }
+}
