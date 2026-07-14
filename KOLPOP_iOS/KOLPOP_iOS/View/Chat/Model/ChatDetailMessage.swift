@@ -23,3 +23,32 @@ struct ChatDetailMessage {
     let content: Content
     let timestamp: String
 }
+
+extension ChatDetailMessage {
+
+    private static let apiDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.locale = Locale(identifier: "ko_KR")
+        return formatter
+    }()
+
+    private static let displayTimeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "a h:mm"
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.amSymbol = "오전"
+        formatter.pmSymbol = "오후"
+        return formatter
+    }()
+
+    init(response: ChatMessageResponse) {
+        sender = response.sender.id == TokenStore.shared.currentUserId ? .me : .other
+        content = .text(response.content)
+        if let date = Self.apiDateFormatter.date(from: response.createdAt) {
+            timestamp = Self.displayTimeFormatter.string(from: date)
+        } else {
+            timestamp = response.createdAt
+        }
+    }
+}

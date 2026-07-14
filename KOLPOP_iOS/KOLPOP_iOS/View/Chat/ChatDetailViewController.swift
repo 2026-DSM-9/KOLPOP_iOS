@@ -12,13 +12,11 @@ import NukeExtensions
 final class ChatDetailViewController: UIViewController {
 
     private let room: ChatRoom
+    private let roomId: Int
+    private let chatService = ChatService()
+    private let socketService = ChatSocketService()
 
-    // TODO: 실제 채팅 API 연동 전까지는 목업 메시지를 사용한다.
-    private var messages: [ChatDetailMessage] = [
-        ChatDetailMessage(sender: .me, content: .text("임대 문의 드립니다!\n하루당 얼마얼마 작성해주셨던데 3주간 사용하고 싶어요! 가능할까요??"), timestamp: "오후 2:30"),
-        ChatDetailMessage(sender: .other, content: .text("안녕하세요! 가능합니다!\n010-1234-1234로 연락 주시면 돼요! 혹시 정확한 날짜 말해주실 수 있나요?"), timestamp: "오후 2:31"),
-        ChatDetailMessage(sender: .me, content: .image("Festival"), timestamp: "오후 2:31")
-    ]
+    private var messages: [ChatDetailMessage] = []
 
     private let backButton = UIButton(type: .system).then {
         $0.setImage(UIImage(systemName: "arrow.left"), for: .normal)
@@ -70,6 +68,7 @@ final class ChatDetailViewController: UIViewController {
 
     init(room: ChatRoom) {
         self.room = room
+        self.roomId = Int(room.id) ?? 0
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -96,10 +95,43 @@ final class ChatDetailViewController: UIViewController {
         inputBarView.onAttachmentTapped = { [weak self] in self?.presentImagePicker() }
 
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillChangeFrame(_:)), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
+
+        loadHistory()
+        connectSocket()
     }
 
     deinit {
         NotificationCenter.default.removeObserver(self)
+        socketService.disconnect()
+    }
+
+    private func loadHistory() {
+        chatService.fetchMessages(roomId: roomId) { [weak self] result in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let responses):
+                    self.messages = responses.map(ChatDetailMessage.init(response:))
+                    self.tableView.reloadData()
+                    self.scrollToBottom(animated: false)
+                case .failure(let error):
+                    print("채팅 내역 조회 실패: \(error)")
+                }
+            }
+        }
+    }
+
+    private func connectSocket() {
+        socketService.connectAndSubscribe(roomId: roomId) { [weak self] message in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                self.messages.append(ChatDetailMessage(response: message))
+                self.tableView.reloadData()
+                self.scrollToBottom(animated: true)
+            }
+        } onError: { error in
+            print("채팅 소켓 오류: \(error)")
+        }
     }
 
     private func setupLayout() {
@@ -210,9 +242,7 @@ final class ChatDetailViewController: UIViewController {
 
     private func sendMessage(_ text: String) {
         inputBarView.clear()
-        messages.append(ChatDetailMessage(sender: .me, content: .text(text), timestamp: "지금"))
-        tableView.reloadData()
-        scrollToBottom(animated: true)
+        socketService.sendMessage(roomId: roomId, content: text)
     }
 
     private func sendImage(_ image: UIImage) {

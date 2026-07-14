@@ -120,7 +120,7 @@ final class FestivalCalendarViewController: UIViewController {
     }
 
     private func fetchFestivals() {
-        festivalService.fetchFestivals(numOfRows: 1000) { [weak self] result in
+        festivalService.fetchFestivals(size: 1000) { [weak self] result in
             guard let self else { return }
             DispatchQueue.main.async {
                 switch result {
@@ -203,7 +203,7 @@ final class FestivalCalendarViewController: UIViewController {
 
         festivalListStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         for festival in matches {
-            festivalListStackView.addArrangedSubview(makeFestivalRow(title: festival.fstvlNm))
+            festivalListStackView.addArrangedSubview(makeFestivalRow(title: festival.name))
         }
     }
 

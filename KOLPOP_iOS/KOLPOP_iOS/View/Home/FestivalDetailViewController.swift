@@ -44,7 +44,7 @@ final class FestivalDetailViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        title = festival.fstvlNm
+        title = festival.name
         setupLayout()
 
         headerCardView.configure(with: festival, nearbyVacantBuildingCount: buildings.count)

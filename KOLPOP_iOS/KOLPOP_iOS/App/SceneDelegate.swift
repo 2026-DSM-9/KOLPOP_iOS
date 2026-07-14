@@ -22,7 +22,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         // 테스트용: 로그인 화면을 건너뛰고 바로 탭바로 진입하고 싶을 때 아래 줄 주석을 풀고
         // 바로 아래 실제 코드 줄은 주석 처리할 것
-        // window.rootViewController = RootTabBarController()
+//         window.rootViewController = RootTabBarController()
 
         window.rootViewController = UINavigationController(rootViewController: LoginViewController())
         window.makeKeyAndVisible()

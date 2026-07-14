@@ -8,35 +8,32 @@ import Moya
 import Alamofire
 
 enum FestivalAPI {
-    case list(page: Int, numOfRows: Int, keyword: String?)
+    case list(page: Int, size: Int, keyword: String?, region: String?, from: String?, to: String?)
 }
 
 extension FestivalAPI: TargetType {
 
     var baseURL: URL {
-        Secrets.festivalAPIBaseURL
+        Secrets.signUpAPIBaseURL
     }
 
-    var path: String { "" }
+    var path: String { "/festivals" }
 
     var method: Moya.Method { .get }
 
     var task: Task {
-        var parameters: [String: Any] = [
-            "serviceKey": Secrets.festivalAPIServiceKey,
-            "type": "json"
-        ]
-
         switch self {
-        case .list(let page, let numOfRows, let keyword):
-            parameters["pageNo"] = page
-            parameters["numOfRows"] = numOfRows
-            if let keyword, !keyword.isEmpty {
-                parameters["fstvlNm"] = keyword
-            }
+        case let .list(page, size, keyword, region, from, to):
+            var parameters: [String: Any] = [
+                "page": page,
+                "size": size
+            ]
+            if let keyword, !keyword.isEmpty { parameters["keyword"] = keyword }
+            if let region, !region.isEmpty { parameters["region"] = region }
+            if let from, !from.isEmpty { parameters["from"] = from }
+            if let to, !to.isEmpty { parameters["to"] = to }
+            return .requestParameters(parameters: parameters, encoding: URLEncoding.default)
         }
-
-        return .requestParameters(parameters: parameters, encoding: URLEncoding.default)
     }
 
     var headers: [String: String]? { nil }
