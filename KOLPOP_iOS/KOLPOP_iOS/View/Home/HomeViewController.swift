@@ -15,11 +15,9 @@ final class HomeViewController: UIViewController {
         case popular
     }
 
-    private let popularListings = [ // 예시값
-        PopularListing(imageURL: nil, title: "대덕소프트웨어마이스터고", address: "대전광역시 가정북로 72", sizeInfo: "200평 / 1층", price: "주 80만원", likeCount: 486),
-        PopularListing(imageURL: nil, title: "대덕소프트웨어마이스터고", address: "대전광역시 가정북로 72", sizeInfo: "200평 / 1층", price: "주 80만원", likeCount: 486),
-        PopularListing(imageURL: nil, title: "대덕소프트웨어마이스터고", address: "대전광역시 가정북로 72", sizeInfo: "200평 / 1층", price: "주 80만원", likeCount: 486)
-    ]
+    private let listingService = ListingService()
+    private var popularListings: [PopularListing] = []
+    private let loadingOverlayView = LoadingOverlayView(message: "인기 매물을 불러오는 중이에요")
 
     private lazy var collectionView = UICollectionView(
         frame: .zero,
@@ -44,6 +42,26 @@ final class HomeViewController: UIViewController {
         view.backgroundColor = .white
         setupNavigationBar()
         setupLayout()
+        fetchPopularListings()
+    }
+
+    private func fetchPopularListings() {
+        listingService.fetchListings { [weak self] result in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                self.loadingOverlayView.isHidden = true
+                switch result {
+                case .success(let summaries):
+                    self.popularListings = summaries
+                        .sorted { $0.likeCount > $1.likeCount }
+                        .prefix(10)
+                        .map(PopularListing.init(summary:))
+                    self.collectionView.reloadData()
+                case .failure(let error):
+                    print("인기 매물 조회 실패: \(error)")
+                }
+            }
+        }
     }
 
     private func setupNavigationBar() {
@@ -62,8 +80,12 @@ final class HomeViewController: UIViewController {
 
     private func setupLayout() {
         view.addSubview(collectionView)
+        view.addSubview(loadingOverlayView)
         collectionView.snp.makeConstraints { make in
             make.edges.equalTo(view.safeAreaLayoutGuide)
+        }
+        loadingOverlayView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
         }
     }
 
