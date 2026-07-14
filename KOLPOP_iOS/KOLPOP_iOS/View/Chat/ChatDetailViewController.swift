@@ -247,7 +247,7 @@ final class ChatDetailViewController: UIViewController {
 
     private func sendImage(_ image: UIImage) {
         // TODO: 실제 이미지 업로드 API 연동 전까지는 선택한 이미지를 그대로 메시지에 표시한다.
-        messages.append(ChatDetailMessage(sender: .me, content: .pickedImage(image), timestamp: "지금"))
+        messages.append(ChatDetailMessage(sender: .me, content: .pickedImage(image), timestamp: ChatDetailMessage.currentTimestampText))
         tableView.reloadData()
         scrollToBottom(animated: true)
     }

@@ -42,6 +42,10 @@ extension ChatDetailMessage {
         return formatter
     }()
 
+    static var currentTimestampText: String {
+        displayTimeFormatter.string(from: Date())
+    }
+
     init(response: ChatMessageResponse) {
         sender = response.sender.id == TokenStore.shared.currentUserId ? .me : .other
         content = .text(response.content)
