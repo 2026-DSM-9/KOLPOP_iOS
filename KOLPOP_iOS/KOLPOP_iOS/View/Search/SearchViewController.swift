@@ -212,8 +212,23 @@ final class SearchViewController: UIViewController {
     }
 
     private func selectListing(id: String) {
+        let previousID = selectedListingID
         selectedListingID = id
-        tableView.reloadData()
+
+        var rowsToReload: [IndexPath] = []
+        if let previousID, previousID != id, let previousRow = visibleListings.firstIndex(where: { $0.id == previousID }) {
+            rowsToReload.append(IndexPath(row: previousRow, section: 0))
+        }
+        if let newRow = visibleListings.firstIndex(where: { $0.id == id }) {
+            rowsToReload.append(IndexPath(row: newRow, section: 0))
+        }
+
+        tableView.performBatchUpdates {
+            tableView.reloadRows(at: rowsToReload, with: .automatic)
+        } completion: { [weak self] _ in
+            guard let self, let row = self.visibleListings.firstIndex(where: { $0.id == id }) else { return }
+            self.tableView.scrollToRow(at: IndexPath(row: row, section: 0), at: .middle, animated: true)
+        }
 
         guard let listing = listings.first(where: { $0.id == id }) else { return }
         mapView.setCenter(listing.coordinate, animated: true)
@@ -221,10 +236,6 @@ final class SearchViewController: UIViewController {
         for case let annotation as ListingAnnotation in mapView.annotations {
             let view = mapView.view(for: annotation) as? PriceAnnotationView
             view?.setHighlighted(annotation.listing.id == id)
-        }
-
-        if let row = visibleListings.firstIndex(where: { $0.id == id }) {
-            tableView.scrollToRow(at: IndexPath(row: row, section: 0), at: .middle, animated: true)
         }
     }
 }
