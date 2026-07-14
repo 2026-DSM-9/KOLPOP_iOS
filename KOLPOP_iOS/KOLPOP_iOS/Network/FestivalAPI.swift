@@ -14,7 +14,7 @@ enum FestivalAPI {
 extension FestivalAPI: TargetType {
 
     var baseURL: URL {
-        URL(string: "https://api.data.go.kr/openapi/tn_pubr_public_cltur_fstvl_api")!
+        Secrets.festivalAPIBaseURL
     }
 
     var path: String { "" }
@@ -23,7 +23,7 @@ extension FestivalAPI: TargetType {
 
     var task: Task {
         var parameters: [String: Any] = [
-            "serviceKey": "4e7dbed149deb89d084f0e46d42ff5f6c6a65cc094d56586b87e7a373f20d618",
+            "serviceKey": Secrets.festivalAPIServiceKey,
             "type": "json"
         ]
 
