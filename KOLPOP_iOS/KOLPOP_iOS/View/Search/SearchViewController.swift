@@ -41,9 +41,12 @@ final class SearchViewController: UIViewController {
         $0.layer.borderColor = UIColor(named: "E8E8E8")?.cgColor
         $0.separatorInset = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 20)
         $0.isHidden = true
-        $0.isScrollEnabled = false
+        $0.rowHeight = 44
         $0.register(UITableViewCell.self, forCellReuseIdentifier: "SuggestionCell")
     }
+
+    private let suggestionRowHeight: CGFloat = 44
+    private let maxVisibleSuggestionRows: CGFloat = 3.5
 
     private let mapContainerView = UIView().then {
         $0.layer.cornerRadius = 16
@@ -222,9 +225,13 @@ final class SearchViewController: UIViewController {
 
     private func updateSuggestionTable() {
         let hasSuggestions = !addressSuggestions.isEmpty
+        let maxHeight = suggestionRowHeight * maxVisibleSuggestionRows
+        let contentHeight = CGFloat(addressSuggestions.count) * suggestionRowHeight
+
         suggestionTableView.isHidden = !hasSuggestions
+        suggestionTableView.isScrollEnabled = contentHeight > maxHeight
         suggestionTableView.snp.updateConstraints { make in
-            make.height.equalTo(hasSuggestions ? addressSuggestions.count * 44 : 0)
+            make.height.equalTo(hasSuggestions ? min(contentHeight, maxHeight) : 0)
         }
         suggestionTableView.reloadData()
     }
