@@ -148,7 +148,7 @@ final class MypageViewController: UIViewController {
                 self.loadingOverlayView.isHidden = true
                 switch result {
                 case .success(let myPage):
-                    self.profile = UserProfile(name: myPage.name, phoneNumber: myPage.phone)
+                    self.profile = UserProfile(name: myPage.name, phoneNumber: myPage.phone, email: myPage.email, introduction: myPage.introduction)
                     self.configure()
                 case .failure(let error):
                     print("마이페이지 조회 실패: \(error)")

@@ -9,8 +9,8 @@ import Then
 
 final class ProfileEditViewController: UIViewController {
 
-    // TODO: 실제 인증 API 연동 전까지는 이 코드로만 인증에 성공한 것으로 처리한다.
-    private static let mockValidVerificationCode = "123456"
+    private let authService = AuthService()
+    private let myPageService = MyPageService()
 
     private let profile: UserProfile
     private let onSave: (UserProfile) -> Void
@@ -43,6 +43,8 @@ final class ProfileEditViewController: UIViewController {
         $0.layer.cornerRadius = 27
     }
 
+    private let loadingOverlayView = LoadingOverlayView(message: "처리 중이에요")
+
     init(profile: UserProfile, onSave: @escaping (UserProfile) -> Void) {
         self.profile = profile
         self.onSave = onSave
@@ -72,8 +74,13 @@ final class ProfileEditViewController: UIViewController {
     }
 
     private func setupLayout() {
-        [nameField, phoneField, sendCodeButton, codeField, statusLabel, submitButton].forEach {
+        [nameField, phoneField, sendCodeButton, codeField, statusLabel, submitButton, loadingOverlayView].forEach {
             view.addSubview($0)
+        }
+
+        loadingOverlayView.isHidden = true
+        loadingOverlayView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
         }
 
         nameField.snp.makeConstraints { make in
@@ -107,28 +114,65 @@ final class ProfileEditViewController: UIViewController {
 
     @objc private func sendCodeTapped() {
         guard let phone = phoneField.textField.text, !phone.isEmpty else { return }
-        // TODO: 실제 인증 코드 발송 API 연동 예정
-        isCodeSent = true
-        statusLabel.isHidden = true
+
+        loadingOverlayView.isHidden = false
+        authService.sendVerificationCode(phone: phone) { [weak self] result in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                self.loadingOverlayView.isHidden = true
+                switch result {
+                case .success:
+                    self.isCodeSent = true
+                    self.statusLabel.isHidden = true
+                case .failure(let error):
+                    print("인증코드 발송 실패: \(error)")
+                    self.showStatus(text: "인증코드 발송에 실패했어요", isSuccess: false)
+                }
+            }
+        }
     }
 
     @objc private func submitTapped() {
-        guard codeField.textField.text == Self.mockValidVerificationCode else {
-            showStatus(text: "인증코드를 확인해주세요", isSuccess: false)
+        guard let phone = phoneField.textField.text, !phone.isEmpty else { return }
+        guard let code = codeField.textField.text, !code.isEmpty else {
+            showStatus(text: "인증코드를 입력해주세요", isSuccess: false)
             return
         }
 
-        var updatedProfile = profile
-        if let name = nameField.textField.text, !name.isEmpty {
-            updatedProfile.name = name
+        loadingOverlayView.isHidden = false
+        authService.verifyVerificationCode(phone: phone, code: code) { [weak self] result in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    self.submitProfileUpdate(phone: phone)
+                case .failure(let error):
+                    self.loadingOverlayView.isHidden = true
+                    print("인증코드 확인 실패: \(error)")
+                    self.showStatus(text: "인증코드를 확인해주세요", isSuccess: false)
+                }
+            }
         }
-        if let phone = phoneField.textField.text, !phone.isEmpty {
-            updatedProfile.phoneNumber = phone
-        }
+    }
 
-        // TODO: 실제 회원정보 수정 API 연동 예정
-        onSave(updatedProfile)
-        showStatus(text: "수정이 완료되었어요", isSuccess: true)
+    private func submitProfileUpdate(phone: String) {
+        let name = nameField.textField.text?.isEmpty == false ? nameField.textField.text! : profile.name
+
+        myPageService.updateMyPage(name: name, email: profile.email, phone: phone, introduction: profile.introduction) { [weak self] result in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                self.loadingOverlayView.isHidden = true
+                switch result {
+                case .success(let myPage):
+                    let updatedProfile = UserProfile(name: myPage.name, phoneNumber: myPage.phone, email: myPage.email, introduction: myPage.introduction)
+                    self.onSave(updatedProfile)
+                    self.showStatus(text: "수정이 완료되었어요", isSuccess: true)
+                case .failure(let error):
+                    print("회원정보 수정 실패: \(error)")
+                    self.showStatus(text: "수정에 실패했어요", isSuccess: false)
+                }
+            }
+        }
     }
 
     private func showStatus(text: String, isSuccess: Bool) {
