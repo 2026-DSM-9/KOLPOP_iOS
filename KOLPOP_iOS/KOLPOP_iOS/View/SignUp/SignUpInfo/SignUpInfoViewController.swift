@@ -4,6 +4,9 @@ import Then
 
 final class SignUpInfoViewController: UIViewController {
     
+    private let authService = AuthService()
+    var verifiedPhone: String = "010-1234-5678" // 이전 화면에서 받아올 전화번호 데이터 데이터 예시
+    
     private let nameTextField = UITextField().then {
         $0.textColor = UIColor(named: "0F1010")
         $0.font = .systemFont(ofSize: 16, weight: .regular)
@@ -43,6 +46,12 @@ final class SignUpInfoViewController: UIViewController {
         $0.titleLabel?.font = .systemFont(ofSize: 14, weight: .regular)
         $0.layer.cornerRadius = 16
         $0.isEnabled = false
+    }
+    
+    // 중복확인 피드백 라벨 (가이드 이미지의 '사용 가능한 아이디 입니다' / '중복된 아이디 입니다')
+    private let idFeedbackLabel = UILabel().then {
+        $0.font = .systemFont(ofSize: 14, weight: .regular)
+        $0.isHidden = true
     }
     
     private let passwordTextField = UITextField().then {
@@ -89,10 +98,19 @@ final class SignUpInfoViewController: UIViewController {
         $0.tintColor = UIColor(named: "D9D9D9")
     }
     
+    // 정보를 확인해 주세요 라벨 (가이드 이미지의 하단 빨간색 에러 메시지)
+    private let errorWarningLabel = UILabel().then {
+        $0.text = "정보를 확인해주세요"
+        $0.textColor = UIColor(named: "FF5757") ?? .red
+        $0.font = .systemFont(ofSize: 14, weight: .regular)
+        $0.textAlignment = .center
+        $0.isHidden = true
+    }
+    
     private let signUpButton = UIButton().then {
         $0.setTitle("회원가입", for: .normal)
-        $0.setTitleColor(UIColor(named: "767778"), for: .normal)
-        $0.backgroundColor = UIColor(named: "F8F8F8")
+        $0.setTitleColor(.white, for: .normal)
+        $0.backgroundColor = UIColor(named: "99DFF9")
         $0.layer.cornerRadius = 25
         $0.titleLabel?.font = .systemFont(ofSize: 16, weight: .bold)
         $0.isEnabled = false
@@ -108,6 +126,7 @@ final class SignUpInfoViewController: UIViewController {
         let isPasswordNotEmpty = !(passwordTextField.text?.isEmpty ?? true)
         let isPasswordCheckNotEmpty = !(passwordCheckTextField.text?.isEmpty ?? true)
         
+        // 아이디 입력 여부에 따른 중복확인 버튼 변경
         if isIdNotEmpty {
             idCheckButton.backgroundColor = UIColor(named: "BFEBFB")
             idCheckButton.setTitleColor(UIColor(named: "00688F"), for: .normal)
@@ -116,16 +135,32 @@ final class SignUpInfoViewController: UIViewController {
             idCheckButton.backgroundColor = UIColor(named: "F8F8F8")
             idCheckButton.setTitleColor(UIColor(named: "767778"), for: .normal)
             idCheckButton.isEnabled = false
+            idFeedbackLabel.isHidden = true
         }
         
+        // 모든 필드가 채워졌을 때 회원가입 버튼 색상 변경 및 활성화
         if isNameNotEmpty && isIdNotEmpty && isPasswordNotEmpty && isPasswordCheckNotEmpty {
             signUpButton.backgroundColor = UIColor(named: "33BEF2")
-            signUpButton.setTitleColor(.white, for: .normal)
             signUpButton.isEnabled = true
         } else {
             signUpButton.backgroundColor = UIColor(named: "99DFF9")
-            signUpButton.setTitleColor(.white, for: .normal)
             signUpButton.isEnabled = false
+        }
+    }
+    
+    @objc private func idCheckButtonTapped() {
+        // 임시 중복 확인 토글 로직 (실제 사용 시 서버 통신이나 데이터 체크 배치)
+        idFeedbackLabel.isHidden = false
+        if idTextField.text == "circle08" {
+            // 예시: 이미 존재하는 아이디인 경우 (가이드 5번 화면)
+            idFeedbackLabel.text = "중복된 아이디 입니다"
+            idFeedbackLabel.textColor = UIColor(named: "FF5757") ?? .red
+            errorWarningLabel.isHidden = false // 하단 에러 띄우기
+        } else {
+            // 예시: 사용 가능한 아이디인 경우 (가이드 6번 화면)
+            idFeedbackLabel.text = "사용 가능한 아이디 입니다"
+            idFeedbackLabel.textColor = UIColor(named: "4CDC5F") ?? .green
+            errorWarningLabel.isHidden = true
         }
     }
     
@@ -141,6 +176,45 @@ final class SignUpInfoViewController: UIViewController {
         }
     }
     
+    @objc private func signUpButtonTapped() {
+            guard let nickname = idTextField.text,
+                  let name = nameTextField.text,
+                  let password = passwordTextField.text,
+                  let passwordConfirm = passwordCheckTextField.text else { return }
+            
+            if password != passwordConfirm {
+                errorWarningLabel.isHidden = false
+                return
+            }
+            
+            // Moya 서비스 호출
+            authService.signup(nickname: nickname, name: name, password: password, passwordConfirm: passwordConfirm, phone: verifiedPhone) { [weak self] result in
+                guard let self = self else { return }
+                switch result {
+                case .success:
+                    print("회원가입 성공! 메인 홈 화면으로 이동합니다.")
+                    
+                    // 1. 메인 탭바 컨트롤러 생성
+                    let mainTabBarVC = RootTabBarController()
+                    
+                    // 2. 현재 앱의 연결된 Window 찾기 (iOS 13+ SceneDelegate 대응)
+                    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                       let window = windowScene.windows.first {
+                        
+                        // 3. 루트 뷰 컨트롤러를 메인 탭바로 교체하며 부드러운 전환 효과 주기
+                        UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve, animations: {
+                            window.rootViewController = mainTabBarVC
+                            window.makeKeyAndVisible()
+                        }, completion: nil)
+                    }
+                    
+                case .failure(let error):
+                    print("회원가입 실패: \(error.localizedDescription)")
+                    self.errorWarningLabel.isHidden = false
+                }
+            }
+        }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
@@ -149,6 +223,9 @@ final class SignUpInfoViewController: UIViewController {
         idTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         passwordTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         passwordCheckTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+        
+        idCheckButton.addTarget(self, action: #selector(idCheckButtonTapped), for: .touchUpInside)
+        signUpButton.addTarget(self, action: #selector(signUpButtonTapped), for: .touchUpInside)
         
         passwordTextFieldIcon.addTarget(self, action: #selector(togglePasswordVisibility), for: .touchUpInside)
         passwordCheckTextFieldIcon.addTarget(self, action: #selector(togglePasswordVisibility), for: .touchUpInside)
@@ -241,6 +318,7 @@ final class SignUpInfoViewController: UIViewController {
             $0.addSubview(idTitle)
             $0.addSubview(idTextField)
             $0.addSubview(idCheckButton)
+            $0.addSubview(idFeedbackLabel)
             
             idTitle.snp.makeConstraints {
                 $0.top.equalToSuperview()
@@ -257,6 +335,10 @@ final class SignUpInfoViewController: UIViewController {
                 $0.trailing.equalToSuperview().inset(32)
                 $0.width.equalTo(82)
                 $0.height.equalTo(32)
+            }
+            idFeedbackLabel.snp.makeConstraints {
+                $0.top.equalTo(idCheckButton.snp.bottom).offset(8)
+                $0.trailing.equalToSuperview().inset(32)
                 $0.bottom.equalToSuperview()
             }
         }
@@ -311,9 +393,15 @@ final class SignUpInfoViewController: UIViewController {
             }
         }
         let signUpButtonView = UIView().then {
+            $0.addSubview(errorWarningLabel)
             $0.addSubview(signUpButton)
+            
+            errorWarningLabel.snp.makeConstraints {
+                $0.top.equalToSuperview().offset(10)
+                $0.leading.trailing.equalToSuperview().inset(32)
+            }
             signUpButton.snp.makeConstraints {
-                $0.top.equalToSuperview()
+                $0.top.equalTo(errorWarningLabel.snp.bottom).offset(20)
                 $0.height.equalTo(52)
                 $0.leading.trailing.equalToSuperview().inset(32)
                 $0.bottom.equalToSuperview().inset(40)
