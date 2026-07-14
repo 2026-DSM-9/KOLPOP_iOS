@@ -9,6 +9,9 @@ import Alamofire
 
 enum AuthAPI {
     case signup(nickname: String, name: String, password: String, passwordConfirm: String, phone: String)
+    case idCheck(loginId: String)
+    case phoneNumber(phone: String)
+    case phoneCheck(phone: String, code: String)
 }
 
 extension AuthAPI: TargetType {
@@ -21,12 +24,18 @@ extension AuthAPI: TargetType {
         switch self {
         case .signup:
             return "auth/entrepreneur/signup"
+        case .idCheck:
+            return "auth/check-id"
+        case .phoneNumber:
+            return "auth/send"
+        case .phoneCheck:
+            return "auth/verify"
         }
     }
 
     var method: Moya.Method {
         switch self {
-        case .signup:
+        default:
             return .post
         }
     }
@@ -40,6 +49,25 @@ extension AuthAPI: TargetType {
                 "password": password,
                 "passwordConfirm": passwordConfirm,
                 "phone": phone
+            ]
+            return .requestParameters(parameters: params, encoding: JSONEncoding.default)
+
+        case let .idCheck(loginId):
+            let params: [String: Any] = [
+                "loginId": loginId
+            ]
+            return .requestParameters(parameters: params, encoding: JSONEncoding.default)
+
+        case let .phoneNumber(phone):
+            let params: [String: Any] = [
+                "phone": phone
+            ]
+            return .requestParameters(parameters: params, encoding: JSONEncoding.default)
+
+        case let .phoneCheck(phone, code):
+            let params: [String: Any] = [
+                "phone": phone,
+                "code": code
             ]
             return .requestParameters(parameters: params, encoding: JSONEncoding.default)
         }
@@ -66,6 +94,11 @@ struct SignUpUser: Codable {
     let phone: String
     let name: String
     let role: String
+}
+
+struct IDCheckResponse: Codable {
+    let success: Bool
+    let data: String?
 }
 
 final class AuthService {
@@ -105,6 +138,74 @@ final class AuthService {
             case .failure(let error):
                 completion(.failure(error))
             }
+        }
+    }
+
+    func checkID(loginId: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        provider.request(.idCheck(loginId: loginId)) { result in
+            switch result {
+            case .success(let response):
+                guard response.statusCode == 200 else {
+                    let error = NSError(
+                        domain: "IDCheckError",
+                        code: response.statusCode,
+                        userInfo: [NSLocalizedDescriptionKey: "아이디 중복 확인에 실패했습니다."]
+                    )
+                    completion(.failure(error))
+                    return
+                }
+
+                do {
+                    let response = try JSONDecoder().decode(IDCheckResponse.self, from: response.data)
+                    completion(.success(response.success))
+                } catch {
+                    completion(.failure(error))
+                }
+
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+
+    func sendVerificationCode(phone: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        provider.request(.phoneNumber(phone: phone)) { result in
+            self.handleAuthenticationResponse(result, errorDomain: "PhoneVerificationSendError", completion: completion)
+        }
+    }
+
+    func verifyVerificationCode(phone: String, code: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        provider.request(.phoneCheck(phone: phone, code: code)) { result in
+            self.handleAuthenticationResponse(result, errorDomain: "PhoneVerificationCheckError", completion: completion)
+        }
+    }
+
+    private func handleAuthenticationResponse(
+        _ result: Result<Response, MoyaError>,
+        errorDomain: String,
+        completion: @escaping (Result<Bool, Error>) -> Void
+    ) {
+        switch result {
+        case .success(let response):
+            guard response.statusCode == 200 else {
+                let error = NSError(
+                    domain: errorDomain,
+                    code: response.statusCode,
+                    userInfo: [NSLocalizedDescriptionKey: "전화번호 인증 요청에 실패했습니다."]
+                )
+                completion(.failure(error))
+                return
+            }
+
+            do {
+                let response = try JSONDecoder().decode(IDCheckResponse.self, from: response.data)
+                completion(.success(response.success))
+            } catch {
+                completion(.failure(error))
+            }
+
+        case .failure(let error):
+            completion(.failure(error))
         }
     }
 }
