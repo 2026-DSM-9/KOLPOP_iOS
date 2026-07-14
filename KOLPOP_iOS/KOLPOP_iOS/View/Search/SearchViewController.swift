@@ -19,29 +19,10 @@ final class SearchViewController: UIViewController {
         "대전광역시 어쩌구 저쩌구 어쩌구"
     ]
 
-    private let categories = ["카페", "리테일", "F&B", "브랜드 팝업"]
-
-    private lazy var listings: [MapListing] = (0..<10).map { index in
-        let latOffset = Double.random(in: -0.015...0.015)
-        let lonOffset = Double.random(in: -0.015...0.015)
-        return MapListing(
-            id: "\(index)",
-            coordinate: CLLocationCoordinate2D(latitude: 36.3504 + latOffset, longitude: 127.3845 + lonOffset),
-            title: "대덕소프트웨어마이스터고",
-            address: "대전광역시 가정북로 72",
-            sizeInfo: "200평 / 1층",
-            category: categories[index % categories.count],
-            landlordName: "김임대",
-            price: "주 80만원",
-            priceBadge: "80만/12만",
-            statusText: "모집중",
-            imageURL: nil,
-            likeCount: 486
-        )
-    }
-
+    private let listingService = ListingService()
     private var visibleListings: [MapListing] = []
     private var selectedListingID: String?
+    private var mapFetchDebounceTimer: Timer?
 
     private let titleLabel = UILabel().then {
         $0.text = "지도 검색"
@@ -124,9 +105,8 @@ final class SearchViewController: UIViewController {
             span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
         )
         mapView.setRegion(initialRegion, animated: false)
-        mapView.addAnnotations(listings.map { ListingAnnotation(listing: $0) })
 
-        updateVisibleListings()
+        fetchMapListings()
     }
 
     private func setupLayout() {
@@ -192,24 +172,39 @@ final class SearchViewController: UIViewController {
             make.height.equalTo(hasText ? mockSuggestions.count * 44 : 0)
         }
         suggestionTableView.reloadData()
+
+        mapFetchDebounceTimer?.invalidate()
+        mapFetchDebounceTimer = Timer.scheduledTimer(withTimeInterval: 0.4, repeats: false) { [weak self] _ in
+            self?.fetchMapListings()
+        }
     }
 
-    private func updateVisibleListings() {
+    private func fetchMapListings() {
         let region = mapView.region
         let minLat = region.center.latitude - region.span.latitudeDelta / 2
         let maxLat = region.center.latitude + region.span.latitudeDelta / 2
         let minLon = region.center.longitude - region.span.longitudeDelta / 2
         let maxLon = region.center.longitude + region.span.longitudeDelta / 2
+        let keyword = searchFieldView.textField.text
 
-        visibleListings = listings.filter {
-            $0.coordinate.latitude >= minLat && $0.coordinate.latitude <= maxLat &&
-            $0.coordinate.longitude >= minLon && $0.coordinate.longitude <= maxLon
+        listingService.fetchMapListings(minLatitude: minLat, maxLatitude: maxLat, minLongitude: minLon, maxLongitude: maxLon, keyword: keyword) { [weak self] result in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let responses):
+                    self.visibleListings = responses.map(MapListing.init(response:))
+                    self.mapView.removeAnnotations(self.mapView.annotations)
+                    self.mapView.addAnnotations(self.visibleListings.map { ListingAnnotation(listing: $0) })
+
+                    self.resultCountLabel.text = "검색 결과 \(self.visibleListings.count)"
+                    self.emptyLabel.isHidden = !self.visibleListings.isEmpty
+                    self.tableView.isHidden = self.visibleListings.isEmpty
+                    self.tableView.reloadData()
+                case .failure(let error):
+                    print("지도 매물 조회 실패: \(error)")
+                }
+            }
         }
-
-        resultCountLabel.text = "검색 결과 \(visibleListings.count)"
-        emptyLabel.isHidden = !visibleListings.isEmpty
-        tableView.isHidden = visibleListings.isEmpty
-        tableView.reloadData()
     }
 
     private func startChat(with listing: MapListing) {
@@ -245,7 +240,7 @@ final class SearchViewController: UIViewController {
             self.tableView.scrollToRow(at: IndexPath(row: row, section: 0), at: .middle, animated: true)
         }
 
-        guard let listing = listings.first(where: { $0.id == id }) else { return }
+        guard let listing = visibleListings.first(where: { $0.id == id }) else { return }
         mapView.setCenter(listing.coordinate, animated: true)
 
         for case let annotation as ListingAnnotation in mapView.annotations {
@@ -277,7 +272,10 @@ extension SearchViewController: MKMapViewDelegate {
     }
 
     func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
-        updateVisibleListings()
+        mapFetchDebounceTimer?.invalidate()
+        mapFetchDebounceTimer = Timer.scheduledTimer(withTimeInterval: 0.4, repeats: false) { [weak self] _ in
+            self?.fetchMapListings()
+        }
     }
 }
 
@@ -303,8 +301,8 @@ extension SearchViewController: UITableViewDataSource {
             self?.startChat(with: listing)
         }
         cell.onDetailTapped = { [weak self] in
-            // TODO: 실제 매물 상세 API 연동 전까지는 목업 데이터를 사용한다.
-            self?.navigationController?.pushViewController(ListingDetailViewController(info: .mock), animated: true)
+            guard let listingId = Int(listing.id) else { return }
+            self?.navigationController?.pushViewController(ListingDetailViewController(listingId: listingId), animated: true)
         }
         return cell
     }

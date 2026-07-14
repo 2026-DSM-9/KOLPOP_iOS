@@ -26,6 +26,22 @@ final class ListingService {
         }
     }
 
+    func fetchMapListings(minLatitude: Double, maxLatitude: Double, minLongitude: Double, maxLongitude: Double, keyword: String? = nil, completion: @escaping (Result<[ListingMapItemResponse], Error>) -> Void) {
+        provider.request(.map(minLatitude: minLatitude, maxLatitude: maxLatitude, minLongitude: minLongitude, maxLongitude: maxLongitude, keyword: keyword)) { result in
+            switch result {
+            case .success(let response):
+                do {
+                    let decoded = try JSONDecoder().decode(ApiResponse<ListingMapResponse>.self, from: response.data)
+                    completion(.success(decoded.data?.listings ?? []))
+                } catch {
+                    completion(.failure(error))
+                }
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+
     func fetchDetail(listingId: Int, completion: @escaping (Result<ListingDetailResponse, Error>) -> Void) {
         provider.request(.detail(listingId: listingId)) { result in
             switch result {
