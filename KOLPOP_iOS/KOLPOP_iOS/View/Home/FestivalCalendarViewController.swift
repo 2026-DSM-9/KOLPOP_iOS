@@ -9,8 +9,8 @@ import Then
 
 final class FestivalCalendarViewController: UIViewController {
 
-    private let festivalService = FestivalService()
-    private var allFestivals: [Festival] = []
+    private let festivalService = ExternalFestivalService()
+    private var allFestivals: [ExternalFestival] = []
 
     private var displayedMonth: Date
     private var selectedDate: Date
@@ -120,7 +120,7 @@ final class FestivalCalendarViewController: UIViewController {
     }
 
     private func fetchFestivals() {
-        festivalService.fetchFestivals(size: 1000) { [weak self] result in
+        festivalService.fetchFestivals(numOfRows: 1000) { [weak self] result in
             guard let self else { return }
             DispatchQueue.main.async {
                 switch result {
@@ -169,7 +169,7 @@ final class FestivalCalendarViewController: UIViewController {
         return days
     }
 
-    private func festivals(on date: Date) -> [Festival] {
+    private func festivals(on date: Date) -> [ExternalFestival] {
         let target = calendar.startOfDay(for: date)
         return allFestivals.filter { festival in
             guard let start = festival.startDate, let end = festival.endDate else { return false }
@@ -203,7 +203,7 @@ final class FestivalCalendarViewController: UIViewController {
 
         festivalListStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         for festival in matches {
-            festivalListStackView.addArrangedSubview(makeFestivalRow(title: festival.name))
+            festivalListStackView.addArrangedSubview(makeFestivalRow(title: festival.fstvlNm))
         }
     }
 
