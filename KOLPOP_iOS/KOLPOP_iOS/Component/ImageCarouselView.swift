@@ -91,11 +91,11 @@ final class ImageCarouselView: UIView {
         }
     }
 
-    /// 각 페이지의 leading을 이전 페이지의 trailing에 이어 붙이고, 마지막 페이지의 trailing을
-    /// scrollView에 고정해 contentSize를 오토레이아웃이 스스로 계산하도록 한다.
-    /// 이전에는 leading 오프셋을 UIScreen.main.bounds.width(고정값)로 계산하면서
-    /// 너비는 self(가변값)에 맞추다 보니 둘이 미세하게 어긋나 스와이프 시 이미지가 밀리는
-    /// 문제가 있었다.
+    /// 각 페이지의 leading을 이전 페이지의 trailing에 이어 붙여, 모든 페이지가 항상 같은
+    /// 기준(self 너비)으로 계산되도록 한다. (예전에는 leading 오프셋만 고정값인
+    /// UIScreen.main.bounds.width를 쓰고 너비는 self를 써서 스와이프 시 밀리는 문제가 있었음)
+    /// contentSize는 오토레이아웃 추론에만 맡기지 않고 명시적으로도 지정해, 페이지 경계 없이
+    /// 무한정 드래그되는 문제를 막는다.
     private func layoutPages(count: Int, configureImageView: (UIImageView, Int) -> Void) {
         pageCount = count
         scrollView.subviews.forEach { $0.removeFromSuperview() }
@@ -124,6 +124,8 @@ final class ImageCarouselView: UIView {
             previousImageView = imageView
         }
 
+        layoutIfNeeded()
+        scrollView.contentSize = CGSize(width: bounds.width * CGFloat(count), height: bounds.height)
         updatePage(0)
     }
 
