@@ -23,6 +23,12 @@ final class SearchViewController: UIViewController {
     private var visibleListings: [MapListing] = []
     private var selectedListingID: String?
     private var mapFetchDebounceTimer: Timer?
+    private var hasAppearedBefore = false
+
+    private let initialRegion = MKCoordinateRegion(
+        center: CLLocationCoordinate2D(latitude: 36.3504, longitude: 127.3845),
+        span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+    )
 
     private let titleLabel = UILabel().then {
         $0.text = "지도 검색"
@@ -100,12 +106,30 @@ final class SearchViewController: UIViewController {
         tableView.dataSource = self
         tableView.delegate = self
 
-        let initialRegion = MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 36.3504, longitude: 127.3845),
-            span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-        )
         mapView.setRegion(initialRegion, animated: false)
 
+        fetchMapListings()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        guard hasAppearedBefore else {
+            hasAppearedBefore = true
+            return
+        }
+        resetToDefaultState()
+    }
+
+    private func resetToDefaultState() {
+        mapFetchDebounceTimer?.invalidate()
+        searchFieldView.textField.text = nil
+        searchFieldView.textField.resignFirstResponder()
+        suggestionTableView.isHidden = true
+        suggestionTableView.snp.updateConstraints { make in
+            make.height.equalTo(0)
+        }
+        selectedListingID = nil
+        mapView.setRegion(initialRegion, animated: false)
         fetchMapListings()
     }
 
