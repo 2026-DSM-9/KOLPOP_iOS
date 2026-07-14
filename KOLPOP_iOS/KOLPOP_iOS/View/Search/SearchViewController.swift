@@ -101,7 +101,7 @@ final class SearchViewController: UIViewController {
         $0.backgroundColor = .white
         $0.rowHeight = UITableView.automaticDimension
         $0.estimatedRowHeight = 130
-        $0.register(MapListingCell.self, forCellReuseIdentifier: MapListingCell.reuseIdentifier)
+        $0.register(ListingSummaryCell.self, forCellReuseIdentifier: ListingSummaryCell.reuseIdentifier)
     }
 
     override func viewDidLoad() {
@@ -297,8 +297,8 @@ extension SearchViewController: UITableViewDataSource {
         }
 
         let listing = visibleListings[indexPath.row]
-        let cell = tableView.dequeueReusableCell(withIdentifier: MapListingCell.reuseIdentifier, for: indexPath) as! MapListingCell
-        cell.configure(with: listing, isSelected: listing.id == selectedListingID)
+        let cell = tableView.dequeueReusableCell(withIdentifier: ListingSummaryCell.reuseIdentifier, for: indexPath) as! ListingSummaryCell
+        cell.configure(with: listing.summary, isSelected: listing.id == selectedListingID)
         cell.onInquireTapped = { [weak self] in
             self?.startChat(with: listing)
         }

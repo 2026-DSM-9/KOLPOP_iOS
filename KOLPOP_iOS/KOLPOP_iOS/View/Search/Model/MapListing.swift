@@ -19,6 +19,19 @@ struct MapListing {
     let statusText: String
     let imageURL: URL?
     let likeCount: Int
+
+    var summary: ListingSummary {
+        ListingSummary(
+            id: id,
+            imageURL: imageURL,
+            title: title,
+            address: address,
+            sizeInfo: sizeInfo,
+            category: category,
+            price: price,
+            likeCount: likeCount
+        )
+    }
 }
 
 final class ListingAnnotation: NSObject, MKAnnotation {

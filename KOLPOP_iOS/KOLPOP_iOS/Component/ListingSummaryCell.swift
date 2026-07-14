@@ -1,5 +1,5 @@
 //
-//  MapListingCell.swift
+//  ListingSummaryCell.swift
 //  KOLPOP_iOS
 //
 
@@ -8,9 +8,9 @@ import SnapKit
 import Then
 import NukeExtensions
 
-final class MapListingCell: UITableViewCell {
+final class ListingSummaryCell: UITableViewCell {
 
-    static let reuseIdentifier = "MapListingCell"
+    static let reuseIdentifier = "ListingSummaryCell"
 
     var onInquireTapped: (() -> Void)?
     var onDetailTapped: (() -> Void)?
@@ -168,7 +168,10 @@ final class MapListingCell: UITableViewCell {
         detailButton.addTarget(self, action: #selector(detailTapped), for: .touchUpInside)
     }
 
-    func configure(with listing: MapListing, isSelected: Bool) {
+    func configure(with listing: ListingSummary, isSelected: Bool, isLiked: Bool = false) {
+        likeIcon.image = UIImage(systemName: isLiked ? "heart.fill" : "heart")
+        likeIcon.tintColor = UIColor(named: isLiked ? "EA8C21" : "A3A4A5")
+
         if let imageURL = listing.imageURL {
             NukeExtensions.loadImage(with: imageURL, into: thumbnailImageView)
         } else {
