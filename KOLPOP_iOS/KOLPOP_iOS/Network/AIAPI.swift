@@ -24,7 +24,7 @@ enum AIAPI {
 extension AIAPI: TargetType {
 
     var baseURL: URL {
-        Secrets.signUpAPIBaseURL
+        Secrets.aiAPIBaseURL
     }
 
     var path: String {
