@@ -61,6 +61,21 @@ final class ListingDetailViewController: UIViewController {
         title = info.title
         setupLayout()
         configure()
+        inquireButton.addTarget(self, action: #selector(inquireTapped), for: .touchUpInside)
+    }
+
+    @objc private func inquireTapped() {
+        // TODO: 실제 채팅방 생성/조회 API 연동 전까지는 매물 정보로 새 ChatRoom을 구성한다.
+        let room = ChatRoom(
+            id: info.title,
+            imageURL: nil,
+            title: info.title,
+            lastMessage: "",
+            senderName: info.landlordName,
+            status: .inProgress,
+            unreadCount: 0
+        )
+        navigationController?.pushViewController(ChatDetailViewController(room: room), animated: true)
     }
 
     private func setupLayout() {
