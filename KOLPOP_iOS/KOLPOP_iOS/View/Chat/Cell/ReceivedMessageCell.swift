@@ -98,6 +98,11 @@ final class ReceivedMessageCell: UITableViewCell {
             messageLabel.isHidden = true
             messageImageView.isHidden = false
             contentContainer.backgroundColor = .clear
+        case .pickedImage(let image):
+            messageImageView.image = image
+            messageLabel.isHidden = true
+            messageImageView.isHidden = false
+            contentContainer.backgroundColor = .clear
         }
     }
 }
