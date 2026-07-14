@@ -22,32 +22,21 @@ extension Festival {
     }()
 
     var startDate: Date? {
-        Self.apiDateFormatter.date(from: fstvlStartDate)
+        Self.apiDateFormatter.date(from: startDateString)
     }
 
     var endDate: Date? {
-        Self.apiDateFormatter.date(from: fstvlEndDate)
+        Self.apiDateFormatter.date(from: endDateString)
     }
 
     var dateRangeText: String {
-        guard let startDate, let endDate else { return "\(fstvlStartDate) - \(fstvlEndDate)" }
+        guard let startDate, let endDate else { return "\(startDateString) - \(endDateString)" }
         return "\(Self.displayDateFormatter.string(from: startDate)) - \(Self.displayDateFormatter.string(from: endDate))"
     }
 
     var dDayText: String {
-        guard let startDate, let endDate else { return "" }
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        let start = calendar.startOfDay(for: startDate)
-        let end = calendar.startOfDay(for: endDate)
-
-        if today < start {
-            let days = calendar.dateComponents([.day], from: today, to: start).day ?? 0
-            return "D-\(days)"
-        } else if today <= end {
-            return "진행중"
-        } else {
-            return "종료"
-        }
+        if status.uppercased().contains("END") { return "종료" }
+        if dDay > 0 { return "D-\(dDay)" }
+        return "진행중"
     }
 }

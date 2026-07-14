@@ -85,8 +85,8 @@ extension FestivalListViewController: UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: FestivalCardCell.reuseIdentifier, for: indexPath) as! FestivalCardCell
-        // TODO: 근처 빈 건물 매물 API 연동 전까지는 0으로 표시
-        cell.configure(with: festivals[indexPath.row], nearbyVacantBuildingCount: 0)
+        let festival = festivals[indexPath.row]
+        cell.configure(with: festival, nearbyVacantBuildingCount: festival.nearbyListingCount)
         return cell
     }
 }
