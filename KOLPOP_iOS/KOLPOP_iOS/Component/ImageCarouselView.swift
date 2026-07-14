@@ -15,6 +15,9 @@ final class ImageCarouselView: UIView {
     private let scrollView = UIScrollView().then {
         $0.isPagingEnabled = true
         $0.showsHorizontalScrollIndicator = false
+        $0.showsVerticalScrollIndicator = false
+        $0.alwaysBounceVertical = false
+        $0.isDirectionalLockEnabled = true
     }
 
     private let pageLabel = UILabel().then {
@@ -91,17 +94,12 @@ final class ImageCarouselView: UIView {
         }
     }
 
-    /// contentLayoutGuide/frameLayoutGuide 기준으로 페이지를 배치하면 UIScrollView가
-    /// contentSize를 알아서 계산하고, bounds가 바뀌어도(회전 등) 계속 맞게 갱신해준다.
-    /// (예전에는 leading 오프셋만 고정값인 UIScreen.main.bounds.width를 쓰고 너비는 self를
-    /// 써서 스와이프 시 밀리는 문제가, 그 다음엔 contentSize 추론이 실제로 안 먹혀 페이지
-    /// 경계 없이 드래그되는 문제가 있었음.)
     private func layoutPages(count: Int, configureImageView: (UIImageView, Int) -> Void) {
         pageCount = count
         scrollView.subviews.forEach { $0.removeFromSuperview() }
 
-        let contentGuide = scrollView.contentLayoutGuide
-        let frameGuide = scrollView.frameLayoutGuide
+        let pageWidth = bounds.width
+        let pageHeight = bounds.height
 
         var previousImageView: UIImageView?
         for index in 0..<count {
@@ -114,20 +112,22 @@ final class ImageCarouselView: UIView {
             scrollView.addSubview(imageView)
 
             imageView.snp.makeConstraints { make in
-                make.top.bottom.equalTo(contentGuide)
-                make.width.equalTo(frameGuide)
+                make.top.equalToSuperview()
+                make.width.equalTo(pageWidth)
+                make.height.equalTo(pageHeight)
                 if let previousImageView {
                     make.leading.equalTo(previousImageView.snp.trailing)
                 } else {
-                    make.leading.equalTo(contentGuide)
+                    make.leading.equalToSuperview()
                 }
                 if index == count - 1 {
-                    make.trailing.equalTo(contentGuide)
+                    make.trailing.equalToSuperview()
                 }
             }
             previousImageView = imageView
         }
 
+        scrollView.contentSize = CGSize(width: pageWidth * CGFloat(count), height: pageHeight)
         updatePage(0)
     }
 
