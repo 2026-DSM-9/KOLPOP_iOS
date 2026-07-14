@@ -79,6 +79,12 @@ struct ListingMapResponse: Decodable {
     let listings: [ListingMapItemResponse]
 }
 
+struct LikeListingResponse: Decodable {
+    let listingId: Int
+    let likeCount: Int
+    let liked: Bool
+}
+
 struct ListingDiscoveryResponse: Decodable {
     let map: ListingMapResponse
     let nearbyListings: ListingListResponse

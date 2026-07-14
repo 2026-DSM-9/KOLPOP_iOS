@@ -9,21 +9,19 @@ import Then
 
 final class LikedListingsViewController: UIViewController {
 
-    // TODO: 실제 찜한 매물 API 연동 전까지는 목업 데이터를 사용한다.
-    private let listings: [ListingSummary] = (0..<6).map { index in
-        ListingSummary(
-            id: "\(index)",
-            imageURL: nil,
-            title: "대덕소프트웨어마이스터고",
-            address: "대전광역시 가정북로 72",
-            sizeInfo: "200평 / 1층",
-            category: "카페",
-            price: "일/ 800,000원",
-            likeCount: 486
-        )
-    }
-
+    private let listingService = ListingService()
+    private var listings: [ListingSummary] = []
     private var selectedListingID: String?
+
+    private let loadingOverlayView = LoadingOverlayView(message: "찜한 매물을 불러오는 중이에요")
+
+    private let emptyLabel = UILabel().then {
+        $0.text = "찜한 매물이 없습니다"
+        $0.font = .paperlogy(.medium, size: 15)
+        $0.textColor = UIColor(named: "A3A4A5")
+        $0.textAlignment = .center
+        $0.isHidden = true
+    }
 
     private let tableView = UITableView().then {
         $0.separatorStyle = .none
@@ -39,19 +37,47 @@ final class LikedListingsViewController: UIViewController {
         view.backgroundColor = .white
         title = "찜한 매물"
 
-        view.addSubview(tableView)
+        [tableView, emptyLabel, loadingOverlayView].forEach { view.addSubview($0) }
         tableView.snp.makeConstraints { make in
             make.edges.equalTo(view.safeAreaLayoutGuide)
+        }
+        emptyLabel.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(120)
+        }
+        loadingOverlayView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
         }
 
         tableView.dataSource = self
         tableView.delegate = self
+
+        fetchLikedListings()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         // 마이페이지가 탭 내비게이션 바를 숨겨두기 때문에 이 화면에서는 다시 보여준다.
         navigationController?.setNavigationBarHidden(false, animated: animated)
+    }
+
+    private func fetchLikedListings() {
+        listingService.fetchLikedListings { [weak self] result in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                self.loadingOverlayView.isHidden = true
+                switch result {
+                case .success(let responses):
+                    self.listings = responses.map(ListingSummary.init(response:))
+                case .failure(let error):
+                    print("찜한 매물 조회 실패: \(error)")
+                    self.listings = []
+                }
+                self.emptyLabel.isHidden = !self.listings.isEmpty
+                self.tableView.isHidden = self.listings.isEmpty
+                self.tableView.reloadData()
+            }
+        }
     }
 }
 
@@ -66,21 +92,21 @@ extension LikedListingsViewController: UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: ListingSummaryCell.reuseIdentifier, for: indexPath) as! ListingSummaryCell
         cell.configure(with: listing, isSelected: listing.id == selectedListingID, isLiked: true)
         cell.onInquireTapped = { [weak self] in
-            // TODO: 실제 채팅방 생성/조회 API 연동 전까지는 매물 정보로 새 ChatRoom을 구성한다.
+            // TODO: 실제 채팅방 생성 API 연동 전까지는 매물 정보로 새 ChatRoom을 구성한다. landlordId가 이 응답에 없어 실제 방 생성은 아직 불가능하다.
             let room = ChatRoom(
                 id: listing.id,
                 imageURL: listing.imageURL,
                 title: listing.title,
                 lastMessage: "",
-                senderName: "김임대",
+                senderName: "",
                 status: .inProgress,
                 unreadCount: 0
             )
             self?.navigationController?.pushViewController(ChatDetailViewController(room: room), animated: true)
         }
         cell.onDetailTapped = { [weak self] in
-            // TODO: 실제 매물 상세 API 연동 전까지는 목업 데이터를 사용한다.
-            self?.navigationController?.pushViewController(ListingDetailViewController(info: .mock), animated: true)
+            guard let listingId = Int(listing.id) else { return }
+            self?.navigationController?.pushViewController(ListingDetailViewController(listingId: listingId), animated: true)
         }
         return cell
     }

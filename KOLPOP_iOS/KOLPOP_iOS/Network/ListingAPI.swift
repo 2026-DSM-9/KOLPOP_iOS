@@ -12,6 +12,9 @@ enum ListingAPI {
     case detail(listingId: Int)
     case discovery(minLatitude: Double, maxLatitude: Double, minLongitude: Double, maxLongitude: Double, keyword: String?)
     case map(minLatitude: Double, maxLatitude: Double, minLongitude: Double, maxLongitude: Double, keyword: String?)
+    case liked
+    case like(listingId: Int)
+    case unlike(listingId: Int)
 }
 
 extension ListingAPI: TargetType {
@@ -30,10 +33,23 @@ extension ListingAPI: TargetType {
             return "/listings/discovery"
         case .map:
             return "/listings/map"
+        case .liked:
+            return "/listings/liked"
+        case .like(let listingId), .unlike(let listingId):
+            return "/listings/\(listingId)/likes"
         }
     }
 
-    var method: Moya.Method { .get }
+    var method: Moya.Method {
+        switch self {
+        case .like:
+            return .post
+        case .unlike:
+            return .delete
+        default:
+            return .get
+        }
+    }
 
     var task: Task {
         switch self {
@@ -70,8 +86,14 @@ extension ListingAPI: TargetType {
                 parameters["keyword"] = keyword
             }
             return .requestParameters(parameters: parameters, encoding: URLEncoding.default)
+
+        case .liked, .like, .unlike:
+            return .requestPlain
         }
     }
 
-    var headers: [String: String]? { nil }
+    var headers: [String: String]? {
+        guard let accessToken = TokenStore.shared.accessToken else { return nil }
+        return ["Authorization": "Bearer \(accessToken)"]
+    }
 }

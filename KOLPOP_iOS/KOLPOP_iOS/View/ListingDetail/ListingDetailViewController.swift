@@ -102,8 +102,25 @@ final class ListingDetailViewController: UIViewController {
                     self.info = info
                     self.title = info.title
                     self.configure()
+                    self.fetchLikedState(listingId: listingId)
                 case .failure(let error):
                     print("매물 상세 조회 실패: \(error)")
+                }
+            }
+        }
+    }
+
+    /// ListingDetailResponse에는 현재 사용자의 찜 여부가 없어 찜한 매물 목록과 대조해 초기 상태를 판단한다.
+    private func fetchLikedState(listingId: Int) {
+        listingService.fetchLikedListings { [weak self] result in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let likedListings):
+                    self.isLiked = likedListings.contains { $0.listingId == listingId }
+                    self.updateLikeButton()
+                case .failure(let error):
+                    print("찜 여부 조회 실패: \(error)")
                 }
             }
         }
@@ -116,8 +133,35 @@ final class ListingDetailViewController: UIViewController {
     }
 
     @objc private func likeTapped() {
+        guard let listingId else {
+            isLiked.toggle()
+            updateLikeButton()
+            return
+        }
+
+        let wasLiked = isLiked
         isLiked.toggle()
         updateLikeButton()
+
+        let completion: (Result<LikeListingResponse, Error>) -> Void = { [weak self] result in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let response):
+                    self.isLiked = response.liked
+                case .failure(let error):
+                    print("찜하기 처리 실패: \(error)")
+                    self.isLiked = wasLiked
+                }
+                self.updateLikeButton()
+            }
+        }
+
+        if wasLiked {
+            listingService.unlikeListing(listingId: listingId, completion: completion)
+        } else {
+            listingService.likeListing(listingId: listingId, completion: completion)
+        }
     }
 
     private func updateLikeButton() {

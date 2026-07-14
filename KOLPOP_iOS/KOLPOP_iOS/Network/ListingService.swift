@@ -62,6 +62,52 @@ final class ListingService {
         }
     }
 
+    func fetchLikedListings(completion: @escaping (Result<[ListingSummaryResponse], Error>) -> Void) {
+        provider.request(.liked) { result in
+            switch result {
+            case .success(let response):
+                do {
+                    let decoded = try JSONDecoder().decode(ApiResponse<ListingListResponse>.self, from: response.data)
+                    completion(.success(decoded.data?.listings ?? []))
+                } catch {
+                    completion(.failure(error))
+                }
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+
+    func likeListing(listingId: Int, completion: @escaping (Result<LikeListingResponse, Error>) -> Void) {
+        provider.request(.like(listingId: listingId)) { result in
+            Self.decodeLikeResponse(result, completion: completion)
+        }
+    }
+
+    func unlikeListing(listingId: Int, completion: @escaping (Result<LikeListingResponse, Error>) -> Void) {
+        provider.request(.unlike(listingId: listingId)) { result in
+            Self.decodeLikeResponse(result, completion: completion)
+        }
+    }
+
+    private static func decodeLikeResponse(_ result: Result<Response, MoyaError>, completion: @escaping (Result<LikeListingResponse, Error>) -> Void) {
+        switch result {
+        case .success(let response):
+            do {
+                let decoded = try JSONDecoder().decode(ApiResponse<LikeListingResponse>.self, from: response.data)
+                guard let likeResponse = decoded.data else {
+                    completion(.failure(NSError(domain: "ListingService", code: -1, userInfo: [NSLocalizedDescriptionKey: "찜하기 응답이 올바르지 않습니다."])))
+                    return
+                }
+                completion(.success(likeResponse))
+            } catch {
+                completion(.failure(error))
+            }
+        case .failure(let error):
+            completion(.failure(error))
+        }
+    }
+
     func fetchDetail(listingId: Int, completion: @escaping (Result<ListingDetailResponse, Error>) -> Void) {
         provider.request(.detail(listingId: listingId)) { result in
             switch result {
