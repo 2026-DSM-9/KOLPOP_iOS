@@ -41,7 +41,7 @@ final class SignUpInfoViewController: UIViewController {
     private let passwordField = LabeledTextFieldView(title: "비밀번호", placeholder: "비밀번호를 입력해주세요", isSecureField: true)
 
     private let passwordRuleLabel = UILabel().then {
-        $0.text = "비밀번호 형식은~"
+        $0.text = "비밀번호는 8자리 이상 설정해주세요."
         $0.font = .paperlogy(.medium, size: 13)
         $0.textColor = UIColor(named: "00AEEF")
     }
