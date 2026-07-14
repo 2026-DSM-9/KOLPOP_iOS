@@ -44,6 +44,8 @@ final class FestivalCalendarViewController: UIViewController {
         $0.spacing = 12
     }
 
+    private let loadingOverlayView = LoadingOverlayView(message: "축제 일정을 불러오는 중이에요")
+
     init() {
         let now = Date()
         self.displayedMonth = now
@@ -65,6 +67,9 @@ final class FestivalCalendarViewController: UIViewController {
         calendarMonthView.onNextMonth = { [weak self] in self?.moveMonth(by: 1) }
         calendarMonthView.onSelectDay = { [weak self] day in self?.selectDay(day) }
 
+
+        reloadCalendar()
+        reloadDetail()
         fetchFestivals()
     }
 
@@ -76,6 +81,11 @@ final class FestivalCalendarViewController: UIViewController {
 
         view.addSubview(calendarMonthView)
         view.addSubview(detailContainerView)
+        view.addSubview(loadingOverlayView)
+
+        loadingOverlayView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
 
         calendarMonthView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide).offset(16)
@@ -121,6 +131,7 @@ final class FestivalCalendarViewController: UIViewController {
                 case .failure(let error):
                     print("축제 캘린더 조회 실패: \(error)")
                 }
+                self.loadingOverlayView.isHidden = true
             }
         }
     }
