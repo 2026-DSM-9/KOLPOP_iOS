@@ -92,8 +92,10 @@ final class AIMessageCell: UITableViewCell {
         messageLabel.snp.makeConstraints { make in
             make.edges.equalToSuperview().inset(16)
         }
+
         typingIndicatorView.snp.makeConstraints { make in
-            make.leading.top.bottom.equalToSuperview().inset(16)
+            make.leading.equalToSuperview().inset(16)
+            make.centerY.equalToSuperview()
             make.width.equalTo(36)
             make.height.equalTo(8)
         }
