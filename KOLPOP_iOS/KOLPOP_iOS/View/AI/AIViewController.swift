@@ -16,6 +16,8 @@ final class AIViewController: UIViewController {
     ]
     private var selectedCategoryIndex = 1
 
+    private let aiService = AIService()
+
     private var messages: [ChatMessage] = [
         ChatMessage(
             sender: .ai,
@@ -133,21 +135,38 @@ final class AIViewController: UIViewController {
         tableView.reloadData()
         scrollToBottom(animated: true)
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in
-            self?.receiveReply(to: text)
+        aiService.send(aiTarget(for: selectedCategoryIndex, message: text)) { [weak self] result in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let reply):
+                    self.receiveReply(reply)
+                case .failure(let error):
+                    print("AI 응답 실패: \(error)")
+                    self.receiveReply("AI 응답을 가져오지 못했어요. 잠시 후 다시 시도해주세요.")
+                }
+            }
         }
     }
 
-    private func receiveReply(to text: String) {
-        guard let lastIndex = messages.indices.last, messages[lastIndex].isTyping else { return }
-        messages[lastIndex] = ChatMessage(sender: .ai, text: makeReply(to: text), showCopyButton: true)
-        tableView.reloadData()
-        scrollToBottom(animated: true)
+    /// 카테고리 칩과 AI 엔드포인트 매핑. "매물 추천"은 대화형 응답이 필요해
+    /// (구조화된 필터를 받는) /ai/recommend/listings 대신 /ai/chat/listings를 사용한다.
+    private func aiTarget(for categoryIndex: Int, message: String) -> AIAPI {
+        switch categoryIndex {
+        case 0:
+            return .chatListings(message: message)
+        case 2:
+            return .recommendBusinessItems(message: message)
+        default:
+            return .marketingAutomation(message: message)
+        }
     }
 
-    private func makeReply(to text: String) -> String {
-        // TODO: 실제 AI 생성 API 연동 전까지는 데모용 고정 답변을 사용한다.
-        "요즘 폭염때문에 더워진 날씨!\n미니 선풍기로 벗어나보세요~^^"
+    private func receiveReply(_ text: String) {
+        guard let lastIndex = messages.indices.last, messages[lastIndex].isTyping else { return }
+        messages[lastIndex] = ChatMessage(sender: .ai, text: text, showCopyButton: true)
+        tableView.reloadData()
+        scrollToBottom(animated: true)
     }
 
     private func scrollToBottom(animated: Bool) {
