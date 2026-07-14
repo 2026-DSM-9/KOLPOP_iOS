@@ -4,6 +4,7 @@
 //
 
 import UIKit
+import PhotosUI
 import SnapKit
 import Then
 import NukeExtensions
@@ -92,6 +93,7 @@ final class ChatDetailViewController: UIViewController {
 
         backButton.addTarget(self, action: #selector(backTapped), for: .touchUpInside)
         inputBarView.onSendTapped = { [weak self] text in self?.sendMessage(text) }
+        inputBarView.onAttachmentTapped = { [weak self] in self?.presentImagePicker() }
 
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillChangeFrame(_:)), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
     }
@@ -213,6 +215,23 @@ final class ChatDetailViewController: UIViewController {
         scrollToBottom(animated: true)
     }
 
+    private func sendImage(_ image: UIImage) {
+        // TODO: 실제 이미지 업로드 API 연동 전까지는 선택한 이미지를 그대로 메시지에 표시한다.
+        messages.append(ChatDetailMessage(sender: .me, content: .pickedImage(image), timestamp: "지금"))
+        tableView.reloadData()
+        scrollToBottom(animated: true)
+    }
+
+    private func presentImagePicker() {
+        var configuration = PHPickerConfiguration(photoLibrary: .shared())
+        configuration.filter = .images
+        configuration.selectionLimit = 1
+
+        let picker = PHPickerViewController(configuration: configuration)
+        picker.delegate = self
+        present(picker, animated: true)
+    }
+
     private func scrollToBottom(animated: Bool) {
         guard !messages.isEmpty else { return }
         let indexPath = IndexPath(row: messages.count - 1, section: 0)
@@ -242,3 +261,18 @@ extension ChatDetailViewController: UITableViewDataSource {
 }
 
 extension ChatDetailViewController: UITableViewDelegate {}
+
+extension ChatDetailViewController: PHPickerViewControllerDelegate {
+
+    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+        picker.dismiss(animated: true)
+
+        guard let provider = results.first?.itemProvider, provider.canLoadObject(ofClass: UIImage.self) else { return }
+        provider.loadObject(ofClass: UIImage.self) { [weak self] object, _ in
+            guard let image = object as? UIImage else { return }
+            DispatchQueue.main.async {
+                self?.sendImage(image)
+            }
+        }
+    }
+}
