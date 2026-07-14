@@ -26,12 +26,26 @@ struct ChatDetailMessage {
 
 extension ChatDetailMessage {
 
-    private static let apiDateFormatter: DateFormatter = {
+    /// 서버가 초 단위 응답과 밀리초/마이크로초 포함 응답을 섞어 보내는 경우가 있어 여러 포맷을 순서대로 시도한다.
+    private static let apiDateFormatters: [DateFormatter] = [
+        "yyyy-MM-dd'T'HH:mm:ss.SSSSSS",
+        "yyyy-MM-dd'T'HH:mm:ss.SSS",
+        "yyyy-MM-dd'T'HH:mm:ss"
+    ].map {
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.dateFormat = $0
         formatter.locale = Locale(identifier: "ko_KR")
         return formatter
-    }()
+    }
+
+    private static func parseAPIDate(_ string: String) -> Date? {
+        for formatter in apiDateFormatters {
+            if let date = formatter.date(from: string) {
+                return date
+            }
+        }
+        return nil
+    }
 
     private static let displayTimeFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -47,7 +61,7 @@ extension ChatDetailMessage {
     init(response: ChatMessageResponse) {
         sender = response.sender.id == TokenStore.shared.currentUserId ? .me : .other
         content = .text(response.content)
-        if let date = Self.apiDateFormatter.date(from: response.createdAt) {
+        if let date = Self.parseAPIDate(response.createdAt) {
             timestamp = Self.displayTimeFormatter.string(from: date)
         } else {
             timestamp = response.createdAt
