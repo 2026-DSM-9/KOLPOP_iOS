@@ -8,7 +8,7 @@ import UIKit
 import SnapKit
 import Then
 
-class SecondSignUpViewController : UIViewController {
+class SignUpInfoViewController : UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
