@@ -79,6 +79,7 @@ final class MypageViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(true, animated: animated)
         // 수정 화면에서 돌아왔을 때 변경된 이름을 바로 반영하기 위함
         configure()
     }
@@ -156,7 +157,11 @@ final class MypageViewController: UIViewController {
     }
 
     @objc private func editTapped() {
-        // TODO: 회원정보 수정 화면 연동 예정
+        let editViewController = ProfileEditViewController(profile: profile) { [weak self] updatedProfile in
+            self?.profile = updatedProfile
+            self?.configure()
+        }
+        navigationController?.pushViewController(editViewController, animated: true)
     }
 
     private func confirmLogout() {
