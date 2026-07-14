@@ -74,6 +74,12 @@ final class ListingDetailViewController: UIViewController {
         likeButton.addTarget(self, action: #selector(likeTapped), for: .touchUpInside)
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // 지도 검색처럼 내비게이션 바를 숨겨둔 화면에서 진입할 수도 있어 다시 보여준다.
+        navigationController?.setNavigationBarHidden(false, animated: animated)
+    }
+
     @objc private func likeTapped() {
         isLiked.toggle()
         updateLikeButton()

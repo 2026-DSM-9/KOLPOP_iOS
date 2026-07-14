@@ -47,6 +47,12 @@ final class LikedListingsViewController: UIViewController {
         tableView.dataSource = self
         tableView.delegate = self
     }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // 마이페이지가 탭 내비게이션 바를 숨겨두기 때문에 이 화면에서는 다시 보여준다.
+        navigationController?.setNavigationBarHidden(false, animated: animated)
+    }
 }
 
 extension LikedListingsViewController: UITableViewDataSource {
