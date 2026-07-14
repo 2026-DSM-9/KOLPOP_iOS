@@ -9,8 +9,9 @@ import Then
 
 final class MypageViewController: UIViewController {
 
-    // TODO: 회원가입/정보 수정 API 연동 전까지는 목업 프로필을 사용한다.
+    private let myPageService = MyPageService()
     private var profile = UserProfile.mock
+    private let loadingOverlayView = LoadingOverlayView(message: "내 정보를 불러오는 중이에요")
 
     private let titleLabel = UILabel().then {
         $0.text = "마이페이지"
@@ -75,6 +76,7 @@ final class MypageViewController: UIViewController {
         setupLayout()
         configure()
         setupActions()
+        fetchMyPage()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -89,8 +91,12 @@ final class MypageViewController: UIViewController {
         profileCardView.addSubview(phoneLabel)
         profileCardView.addSubview(editButton)
 
-        [titleLabel, profileCardView, likedListingsRow, aiHistoryRow, logoutRow, withdrawRow].forEach {
+        [titleLabel, profileCardView, likedListingsRow, aiHistoryRow, logoutRow, withdrawRow, loadingOverlayView].forEach {
             view.addSubview($0)
+        }
+
+        loadingOverlayView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
         }
 
         titleLabel.snp.makeConstraints { make in
@@ -132,6 +138,22 @@ final class MypageViewController: UIViewController {
         withdrawRow.snp.makeConstraints { make in
             make.top.equalTo(logoutRow.snp.bottom).offset(12)
             make.leading.trailing.equalToSuperview().inset(20)
+        }
+    }
+
+    private func fetchMyPage() {
+        myPageService.fetchMyPage { [weak self] result in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                self.loadingOverlayView.isHidden = true
+                switch result {
+                case .success(let myPage):
+                    self.profile = UserProfile(name: myPage.name, phoneNumber: myPage.phone)
+                    self.configure()
+                case .failure(let error):
+                    print("마이페이지 조회 실패: \(error)")
+                }
+            }
         }
     }
 
