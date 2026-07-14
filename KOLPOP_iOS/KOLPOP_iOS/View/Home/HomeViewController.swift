@@ -193,7 +193,7 @@ extension HomeViewController: UICollectionViewDelegate {
 
         switch Section(rawValue: indexPath.section) {
         case .banner:
-            navigationController?.pushViewController(FestivalPopupViewController(), animated: true)
+            navigationController?.pushViewController(FestivalListViewController(), animated: true)
 
         case .quickMenu:
             if indexPath.item == 0 {
