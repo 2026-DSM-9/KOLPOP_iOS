@@ -106,7 +106,7 @@ final class ImageCarouselView: UIView {
             let imageView = UIImageView().then {
                 $0.contentMode = .scaleAspectFit
                 $0.clipsToBounds = true
-                $0.backgroundColor = UIColor(named: "E8E8E8")
+                $0.backgroundColor = .black
             }
             configureImageView(imageView, index)
             scrollView.addSubview(imageView)
