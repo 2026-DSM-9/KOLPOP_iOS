@@ -3,152 +3,167 @@ import SnapKit
 import Then
 
 final class SignUpAuthViewController: UIViewController {
+    
     @objc func nextButtonDidTap() {
-        present(SignUpInfoViewController(), animated: false , completion: nil)
+        let signUpInfoViewController = SignUpInfoViewController()
+        signUpInfoViewController.modalPresentationStyle = .fullScreen
+        present(SignUpInfoViewController(), animated: false, completion: nil)
     }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         view.backgroundColor = .white
+        
         let arrow = UIImageView().then {
             $0.image = UIImage(systemName: "arrow.left")
             $0.tintColor = UIColor(named: "0F1010")
-            view.addSubview($0)
-            $0.snp.makeConstraints {
-                $0.width.height.equalTo(24)
-                $0.top.equalToSuperview().offset(71)
-                $0.leading.equalToSuperview().inset(24)
-            }
         }
-        let titleView : UIView = {
-            lazy var titleContaner = UIView()
-            let titleLabel = UILabel().then {
-                $0.font = .systemFont(ofSize: 32, weight: .bold)
-                $0.textColor = UIColor(named: "0F1010")
-                $0.text = "콜팝"
-            }
-            let subTitleLabel = UILabel().then {
-                $0.text = "빈 건물 찾아 팝업 열기"
-                $0.textColor = UIColor(named: "C6C6C7")
-                $0.font = .systemFont(ofSize: 20, weight: .bold)
-            }
-            titleContaner.addSubview(titleLabel)
-            titleContaner.addSubview(subTitleLabel)
+        view.addSubview(arrow)
+        arrow.snp.makeConstraints {
+            $0.width.height.equalTo(24)
+            $0.top.equalTo(view.safeAreaLayoutGuide).offset(20)
+            $0.leading.equalToSuperview().inset(24)
+        }
+        
+        let titleLabel = UILabel().then {
+            $0.font = .systemFont(ofSize: 32, weight: .bold)
+            $0.textColor = UIColor(named: "0F1010")
+            $0.text = "콜팝"
+        }
+        let subTitleLabel = UILabel().then {
+            $0.text = "빈 건물 찾아 팝업 열기"
+            $0.textColor = UIColor(named: "C6C6C7")
+            $0.font = .systemFont(ofSize: 20, weight: .bold)
+        }
+        let titleView = UIView().then {
+            $0.addSubview(titleLabel)
+            $0.addSubview(subTitleLabel)
+        }
+        
+        let phoneTitle = UILabel().then {
+            $0.text = "전화번호"
+            $0.textColor = UIColor(named: "A3A4A5")
+            $0.font = .systemFont(ofSize: 16, weight: .regular)
+        }
+        let phoneTextField = UITextField().then {
+            $0.textColor = UIColor(named: "0F1010")
+            $0.font = .systemFont(ofSize: 16, weight: .regular)
+            $0.attributedPlaceholder = NSAttributedString(
+                string: "전화번호를 입력해 주세요",
+                attributes: [.foregroundColor: UIColor(named: "D9D9D9")!]
+            )
+            $0.layer.borderColor = UIColor(named: "D9D9D9")!.cgColor
+            $0.layer.borderWidth = 1
+            $0.layer.cornerRadius = 25
             
-            titleLabel.snp.makeConstraints {
-                $0.centerX.equalToSuperview()
-                $0.top.equalToSuperview().inset(206)
-                $0.height.equalTo(38)
-            }
-            subTitleLabel.snp.makeConstraints {
-                $0.centerX.equalToSuperview()
-                $0.top.equalTo(titleLabel.snp.bottom).offset(4)
-                $0.height.equalTo(24)
-            }
-            return titleContaner
-        }()
-        let inputView : UIView = {
-            lazy var inputContaner = UIView()
-            let phoneTitle = UILabel().then {
-                $0.text = "전화번호"
-                $0.textColor = UIColor(named: "A3A4A5")
-                $0.font = .systemFont(ofSize: 16, weight: .regular)
-            }
-            let phoneTextField = UITextField().then {
-                $0.textColor = UIColor(named: "0F1010")
-                $0.font = .systemFont(ofSize: 16, weight: .regular)
-                $0.attributedPlaceholder = NSAttributedString(
-                    string: "전화번호를 입력 해 주세요",
-                    attributes: [.foregroundColor: UIColor(named: "D9D9D9")!]
-                )
-                $0.layer.borderColor = UIColor(named: "D9D9D9")!.cgColor
-                $0.layer.cornerRadius = 25
-            }
-            let codeTitle = UILabel().then {
-                $0.text = "인증코드"
-                $0.textColor = UIColor(named: "A3A4A5")
-                $0.font = .systemFont(ofSize: 16, weight: .regular)
-            }
-            let codeTextField = UITextField().then {
-                $0.textColor = UIColor(named: "0F1010")
-                $0.font = .systemFont(ofSize: 16, weight: .regular)
-                $0.attributedPlaceholder = NSAttributedString(
-                    string: "인증코드를 입력해주세요",
-                    attributes: [.foregroundColor: UIColor(named: "D9D9D9")!]
-                )
-                $0.layer.borderColor = UIColor(named: "D9D9D9")!.cgColor
-                $0.layer.cornerRadius = 25
-            }
-            let sendCodeButton = UIButton().then {
-                $0.setTitle("인증 코드 발송", for: .normal)
-                $0.setTitleColor(UIColor(named: "767778"), for: .normal)
-                $0.titleLabel?.font = .systemFont(ofSize: 14, weight: .regular)
-                $0.backgroundColor = UIColor(named: "F8F8F8")
-                $0.layer.cornerRadius = 16
-            }
+            let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 20, height: 52))
+            $0.leftView = paddingView
+            $0.leftViewMode = .always
+        }
+        let sendCodeButton = UIButton().then {
+            $0.setTitle("인증 코드 발송", for: .normal)
+            $0.setTitleColor(UIColor(named: "767778"), for: .normal)
+            $0.titleLabel?.font = .systemFont(ofSize: 14, weight: .regular)
+            $0.backgroundColor = UIColor(named: "F8F8F8")
+            $0.layer.cornerRadius = 16
+        }
+        let codeTitle = UILabel().then {
+            $0.text = "인증코드"
+            $0.textColor = UIColor(named: "A3A4A5")
+            $0.font = .systemFont(ofSize: 16, weight: .regular)
+        }
+        let codeTextField = UITextField().then {
+            $0.textColor = UIColor(named: "0F1010")
+            $0.font = .systemFont(ofSize: 16, weight: .regular)
+            $0.attributedPlaceholder = NSAttributedString(
+                string: "인증코드를 입력해주세요",
+                attributes: [.foregroundColor: UIColor(named: "D9D9D9")!]
+            )
+            $0.layer.borderColor = UIColor(named: "D9D9D9")!.cgColor
+            $0.layer.borderWidth = 1
+            $0.layer.cornerRadius = 25
             
-            [phoneTitle, phoneTextField, codeTitle, codeTextField, sendCodeButton].forEach {
-                inputContaner.addSubview($0)
-            }
-            phoneTitle.snp.makeConstraints {
-                $0.top.equalToSuperview()
-                $0.leading.equalTo(34)
-                $0.height.equalTo(19)
-            }
-            phoneTextField.snp.makeConstraints {
-                $0.leading.trailing.equalTo(34)
-                $0.top.equalTo(phoneTitle.snp.bottom).offset(12)
-                $0.height.equalTo(52)
-            }
-            sendCodeButton.snp.makeConstraints {
-                $0.trailing.equalTo(32)
-                $0.top.equalTo(phoneTextField.snp.bottom).offset(12)
-                $0.width.equalTo(113)
-                $0.height.equalTo(32)
-            }
-            codeTitle.snp.makeConstraints {
-                $0.top.equalTo(sendCodeButton.snp.bottom)
-                $0.leading.equalTo(34)
-                $0.height.equalTo(19)
-            }
-            codeTextField.snp.makeConstraints {
-                $0.leading.trailing.equalTo(34)
-                $0.top.equalTo(codeTitle.snp.bottom).offset(12)
-                $0.height.equalTo(52)
-            }
-            return inputContaner
-        }()
+            let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 20, height: 52))
+            $0.leftView = paddingView
+            $0.leftViewMode = .always
+        }
+        let inputView = UIView().then {
+            [$0.addSubview(phoneTitle), $0.addSubview(phoneTextField), $0.addSubview(sendCodeButton), $0.addSubview(codeTitle), $0.addSubview(codeTextField)].forEach { _ in }
+        }
+        
         let codeCheckText = UILabel().then {
             $0.text = "인증코드를 확인해주세요"
             $0.textColor = UIColor(named: "FF5757")
             $0.font = .systemFont(ofSize: 16)
-            $0.snp.makeConstraints {
-                $0.top.equalTo(inputView.snp.bottom).offset(32)
-                $0.centerX.equalToSuperview()
-            }
+            $0.textAlignment = .center
         }
         let nextButton = UIButton().then {
             $0.setTitle("다음", for: .normal)
             $0.setTitleColor(.white, for: .normal)
             $0.titleLabel?.font = .systemFont(ofSize: 16, weight: .bold)
             $0.backgroundColor = UIColor(named: "99DFF9")
+            $0.layer.cornerRadius = 26
             $0.addTarget(self, action: #selector(nextButtonDidTap), for: .touchUpInside)
         }
-        let StackView : UIView = {
-            let views = [titleView, inputView, codeCheckText]
-            let stackView = UIStackView(arrangedSubviews: views).then {
-                $0.axis = .vertical
-                $0.spacing = 36
-                $0.distribution = .fill
-                $0.alignment = .fill
-            }
-            return stackView
-        }()
         
-        view.addSubview(StackView)
+        view.addSubview(nextButton)
+        nextButton.snp.makeConstraints {
+            $0.leading.trailing.equalToSuperview().inset(34)
+            $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(20)
+            $0.height.equalTo(52)
+        }
         
-        StackView.snp.makeConstraints {
-            $0.center.width.equalToSuperview()
+        let stackView = UIStackView(arrangedSubviews: [titleView, inputView, codeCheckText]).then {
+            $0.axis = .vertical
+            $0.spacing = 36
+            $0.distribution = .fill
+            $0.alignment = .fill
+        }
+        
+        view.addSubview(stackView)
+        stackView.snp.makeConstraints {
+            $0.top.equalTo(arrow.snp.bottom).offset(30)
+            $0.leading.trailing.equalToSuperview()
+        }
+        
+        titleLabel.snp.makeConstraints {
+            $0.centerX.equalToSuperview()
+            $0.top.equalToSuperview().inset(40)
+            $0.height.equalTo(38)
+        }
+        subTitleLabel.snp.makeConstraints {
+            $0.centerX.equalToSuperview()
+            $0.top.equalTo(titleLabel.snp.bottom).offset(4)
+            $0.height.equalTo(24)
+            $0.bottom.equalToSuperview()
+        }
+        
+        phoneTitle.snp.makeConstraints {
+            $0.top.equalToSuperview()
+            $0.leading.equalToSuperview().inset(34)
+            $0.height.equalTo(19)
+        }
+        phoneTextField.snp.makeConstraints {
+            $0.leading.trailing.equalToSuperview().inset(34)
+            $0.top.equalTo(phoneTitle.snp.bottom).offset(12)
+            $0.height.equalTo(52)
+        }
+        sendCodeButton.snp.makeConstraints {
+            $0.trailing.equalToSuperview().inset(32)
+            $0.top.equalTo(phoneTextField.snp.bottom).offset(12)
+            $0.width.equalTo(113)
+            $0.height.equalTo(32)
+        }
+        codeTitle.snp.makeConstraints {
+            $0.top.equalTo(sendCodeButton.snp.bottom).offset(12) 
+            $0.leading.equalToSuperview().inset(34)
+            $0.height.equalTo(19)
+        }
+        codeTextField.snp.makeConstraints {
+            $0.leading.trailing.equalToSuperview().inset(34)
+            $0.top.equalTo(codeTitle.snp.bottom).offset(12)
+            $0.height.equalTo(52)
+            $0.bottom.equalToSuperview() // 컨테이너 바텀을 닫아줌
         }
     }
 }
