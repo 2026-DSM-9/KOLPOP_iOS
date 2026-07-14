@@ -62,4 +62,5 @@ fastlane/screenshots/**/*.png
 fastlane/test_output
 
 # API keys / base URLs
-Secrets.swift
+KOLPOP_iOS/Network/Secrets.swift
+KOLPOP_iOS/KOLPOP_iOS/Network/Secrets.swift
