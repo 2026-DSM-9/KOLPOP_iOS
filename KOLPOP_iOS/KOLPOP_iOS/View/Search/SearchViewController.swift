@@ -222,7 +222,9 @@ final class SearchViewController: UIViewController {
                     self.visibleListings = []
                 }
 
-                self.selectedListingID = nil
+                if let selectedListingID = self.selectedListingID, !self.visibleListings.contains(where: { $0.id == selectedListingID }) {
+                    self.selectedListingID = nil
+                }
                 self.mapView.removeAnnotations(self.mapView.annotations)
                 self.mapView.addAnnotations(self.visibleListings.map { ListingAnnotation(listing: $0) })
 
