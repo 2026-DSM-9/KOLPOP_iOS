@@ -35,6 +35,12 @@ final class SentMessageCell: UITableViewCell {
         $0.textColor = UIColor(named: "A3A4A5")
     }
 
+    // isHidden만으로는 제약이 계속 살아있어 messageImageView의 고정 200x200 크기가
+    // 텍스트 메시지일 때도 contentContainer 크기를 강제해버린다.
+    // 두 콘텐츠 타입의 제약을 따로 두고 필요한 쪽만 활성화한다.
+    private var textConstraints: [Constraint] = []
+    private var imageConstraints: [Constraint] = []
+
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupLayout()
@@ -61,12 +67,22 @@ final class SentMessageCell: UITableViewCell {
             make.bottom.equalToSuperview().offset(-12)
         }
         messageLabel.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(16)
+            textConstraints = [
+                make.top.equalToSuperview().offset(16).constraint,
+                make.leading.equalToSuperview().offset(16).constraint,
+                make.trailing.equalToSuperview().offset(-16).constraint,
+                make.bottom.equalToSuperview().offset(-16).constraint
+            ]
         }
         messageImageView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
-            make.width.equalTo(200)
-            make.height.equalTo(200)
+            imageConstraints = [
+                make.top.equalToSuperview().constraint,
+                make.leading.equalToSuperview().constraint,
+                make.trailing.equalToSuperview().constraint,
+                make.bottom.equalToSuperview().constraint,
+                make.width.equalTo(200).constraint,
+                make.height.equalTo(200).constraint
+            ]
         }
         timestampLabel.snp.makeConstraints { make in
             make.trailing.equalTo(contentContainer.snp.leading).offset(-8)
@@ -80,19 +96,30 @@ final class SentMessageCell: UITableViewCell {
         switch message.content {
         case .text(let text):
             messageLabel.text = text
-            messageLabel.isHidden = false
-            messageImageView.isHidden = true
+            showText()
             contentContainer.backgroundColor = UIColor(named: "00AEEF")
         case .image(let imageName):
             messageImageView.image = UIImage(named: imageName)
-            messageLabel.isHidden = true
-            messageImageView.isHidden = false
+            showImage()
             contentContainer.backgroundColor = .clear
         case .pickedImage(let image):
             messageImageView.image = image
-            messageLabel.isHidden = true
-            messageImageView.isHidden = false
+            showImage()
             contentContainer.backgroundColor = .clear
         }
+    }
+
+    private func showText() {
+        messageLabel.isHidden = false
+        messageImageView.isHidden = true
+        imageConstraints.forEach { $0.deactivate() }
+        textConstraints.forEach { $0.activate() }
+    }
+
+    private func showImage() {
+        messageLabel.isHidden = true
+        messageImageView.isHidden = false
+        textConstraints.forEach { $0.deactivate() }
+        imageConstraints.forEach { $0.activate() }
     }
 }
