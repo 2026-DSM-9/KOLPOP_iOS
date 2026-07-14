@@ -85,9 +85,12 @@ final class ChatRoomCell: UITableViewCell {
             make.edges.equalToSuperview().inset(UIEdgeInsets(top: 6, left: 20, bottom: 6, right: 20))
         }
 
+        // bottom을 고정으로 잡으면 썸네일(고정 70pt)이 컨테이너 높이를 결정해버려서
+        // 텍스트 길이와 무관하게 셀 높이가 항상 똑같이 고정된다.
+        // 아래쪽은 여유만 두고(lessThanOrEqualTo), 실제 높이는 텍스트 쪽(senderNameLabel)이 결정하도록 한다.
         thumbnailImageView.snp.makeConstraints { make in
             make.top.leading.equalToSuperview().offset(16)
-            make.bottom.equalToSuperview().offset(-16)
+            make.bottom.lessThanOrEqualToSuperview().offset(-16)
             make.width.height.equalTo(70)
         }
         unreadBadge.snp.makeConstraints { make in
@@ -120,6 +123,7 @@ final class ChatRoomCell: UITableViewCell {
         senderNameLabel.snp.makeConstraints { make in
             make.top.equalTo(lastMessageLabel.snp.bottom).offset(8)
             make.leading.equalTo(thumbnailImageView.snp.trailing).offset(14)
+            make.bottom.equalToSuperview().offset(-16)
         }
     }
 
