@@ -97,7 +97,7 @@ final class ImageCarouselView: UIView {
 
         for index in 0..<count {
             let imageView = UIImageView().then {
-                $0.contentMode = .scaleAspectFill
+                $0.contentMode = .scaleAspectFit
                 $0.clipsToBounds = true
                 $0.backgroundColor = UIColor(named: "E8E8E8")
             }

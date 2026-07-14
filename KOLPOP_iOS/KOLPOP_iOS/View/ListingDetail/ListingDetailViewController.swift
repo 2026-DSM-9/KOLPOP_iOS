@@ -10,6 +10,7 @@ import Then
 final class ListingDetailViewController: UIViewController {
 
     private let listingService = ListingService()
+    private let chatService = ChatService()
     private var info: ListingDetailInfo?
     private let loadingOverlayView = LoadingOverlayView(message: "매물 정보를 불러오는 중이에요")
 
@@ -128,17 +129,21 @@ final class ListingDetailViewController: UIViewController {
 
     @objc private func inquireTapped() {
         guard let info else { return }
-        // TODO: 실제 채팅방 생성/조회 API 연동 전까지는 매물 정보로 새 ChatRoom을 구성한다.
-        let room = ChatRoom(
-            id: info.title,
-            imageURL: nil,
-            title: info.title,
-            lastMessage: "",
-            senderName: info.landlordName,
-            status: .inProgress,
-            unreadCount: 0
-        )
-        navigationController?.pushViewController(ChatDetailViewController(room: room), animated: true)
+
+        loadingOverlayView.isHidden = false
+        chatService.createRoom(landlordId: info.landlordId) { [weak self] result in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                self.loadingOverlayView.isHidden = true
+                switch result {
+                case .success(let roomResponse):
+                    let room = ChatRoom(response: roomResponse)
+                    self.navigationController?.pushViewController(ChatDetailViewController(room: room), animated: true)
+                case .failure(let error):
+                    print("채팅방 생성 실패: \(error)")
+                }
+            }
+        }
     }
 
     private func setupLayout() {

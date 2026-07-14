@@ -44,6 +44,7 @@ struct ListingDetailResponse: Decodable {
     let deposit: Int
     let area: Double
     let sevenDayTotalFee: Int
+    let landlordId: Int
     let landlordName: String
     let likeCount: Int
     let viewCount: Int

@@ -8,6 +8,7 @@ import Foundation
 struct ListingDetailInfo {
     let title: String
     let address: String
+    let landlordId: Int
     let landlordName: String
     let tags: [String]
     let deposit: String
@@ -25,6 +26,7 @@ struct ListingDetailInfo {
     static let mock = ListingDetailInfo(
         title: "대덕소프트웨어마이스터고",
         address: "대전광역시 가정북로 72",
+        landlordId: 0,
         landlordName: "김임대",
         tags: ["#유동인구많음", "#코너자리", "#대로변"],
         deposit: "5,000,000원",
@@ -45,6 +47,7 @@ extension ListingDetailInfo {
     init(response: ListingDetailResponse) {
         title = response.title
         address = response.detailAddress.map { "\(response.address) \($0)" } ?? response.address
+        landlordId = response.landlordId
         landlordName = response.landlordName
         tags = response.hashtags
         deposit = "\(response.deposit.formattedWithComma)원"
