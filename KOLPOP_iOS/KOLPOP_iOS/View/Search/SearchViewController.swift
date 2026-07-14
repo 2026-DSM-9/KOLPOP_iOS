@@ -31,6 +31,7 @@ final class SearchViewController: UIViewController {
             address: "대전광역시 가정북로 72",
             sizeInfo: "200평 / 1층",
             category: categories[index % categories.count],
+            landlordName: "김임대",
             price: "주 80만원",
             priceBadge: "80만/12만",
             statusText: "모집중",
@@ -211,6 +212,20 @@ final class SearchViewController: UIViewController {
         tableView.reloadData()
     }
 
+    private func startChat(with listing: MapListing) {
+        // TODO: 실제 채팅방 생성/조회 API 연동 전까지는 매물 정보로 새 ChatRoom을 구성한다.
+        let room = ChatRoom(
+            id: listing.id,
+            imageURL: listing.imageURL,
+            title: listing.title,
+            lastMessage: "",
+            senderName: listing.landlordName,
+            status: .inProgress,
+            unreadCount: 0
+        )
+        navigationController?.pushViewController(ChatDetailViewController(room: room), animated: true)
+    }
+
     private func selectListing(id: String) {
         let previousID = selectedListingID
         selectedListingID = id
@@ -284,8 +299,8 @@ extension SearchViewController: UITableViewDataSource {
         let listing = visibleListings[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: MapListingCell.reuseIdentifier, for: indexPath) as! MapListingCell
         cell.configure(with: listing, isSelected: listing.id == selectedListingID)
-        cell.onInquireTapped = {
-            // TODO: 실제 문의하기 플로우 연동
+        cell.onInquireTapped = { [weak self] in
+            self?.startChat(with: listing)
         }
         cell.onDetailTapped = { [weak self] in
             // TODO: 실제 매물 상세 API 연동 전까지는 목업 데이터를 사용한다.
