@@ -64,7 +64,7 @@ extension LikedListingsViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let listing = listings[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: ListingSummaryCell.reuseIdentifier, for: indexPath) as! ListingSummaryCell
-        cell.configure(with: listing, isSelected: listing.id == selectedListingID)
+        cell.configure(with: listing, isSelected: listing.id == selectedListingID, isLiked: true)
         cell.onInquireTapped = { [weak self] in
             // TODO: 실제 채팅방 생성/조회 API 연동 전까지는 매물 정보로 새 ChatRoom을 구성한다.
             let room = ChatRoom(

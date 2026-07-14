@@ -168,7 +168,10 @@ final class ListingSummaryCell: UITableViewCell {
         detailButton.addTarget(self, action: #selector(detailTapped), for: .touchUpInside)
     }
 
-    func configure(with listing: ListingSummary, isSelected: Bool) {
+    func configure(with listing: ListingSummary, isSelected: Bool, isLiked: Bool = false) {
+        likeIcon.image = UIImage(systemName: isLiked ? "heart.fill" : "heart")
+        likeIcon.tintColor = UIColor(named: isLiked ? "EA8C21" : "A3A4A5")
+
         if let imageURL = listing.imageURL {
             NukeExtensions.loadImage(with: imageURL, into: thumbnailImageView)
         } else {
