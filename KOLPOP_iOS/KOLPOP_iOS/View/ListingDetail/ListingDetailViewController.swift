@@ -152,7 +152,7 @@ final class ListingDetailViewController: UIViewController {
 
     private func setupPriceCard() {
         let depositBox = makeInfoBox(label: "보증금", value: info.deposit, valueColorName: "1A1C1E")
-        let dailyPriceBox = makeInfoBox(label: "일당 가격", value: info.dailyPrice, valueColorName: "00AEEF")
+        let dailyPriceBox = makeInfoBox(label: "일당 가격", value: info.dailyPrice, valueColorName: "00688F")
         let areaBox = makeInfoBox(label: "면적", value: info.area, valueColorName: "1A1C1E")
 
         let topStack = UIStackView(arrangedSubviews: [depositBox, dailyPriceBox]).then {
