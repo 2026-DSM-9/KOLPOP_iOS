@@ -9,7 +9,7 @@ import Alamofire
 
 enum ChatAPI {
     case rooms
-    case createRoom(landlordId: Int)
+    case createRoom(listingId: Int, content: String)
     case messages(roomId: Int)
 }
 
@@ -41,8 +41,8 @@ extension ChatAPI: TargetType {
         switch self {
         case .rooms, .messages:
             return .requestPlain
-        case .createRoom(let landlordId):
-            return .requestParameters(parameters: ["landlordId": landlordId], encoding: JSONEncoding.default)
+        case let .createRoom(listingId, content):
+            return .requestParameters(parameters: ["listingId": listingId, "content": content], encoding: JSONEncoding.default)
         }
     }
 
@@ -65,8 +65,8 @@ final class ChatService {
         }
     }
 
-    func createRoom(landlordId: Int, completion: @escaping (Result<ChatRoomResponse, Error>) -> Void) {
-        provider.request(.createRoom(landlordId: landlordId)) { result in
+    func createRoom(listingId: Int, content: String, completion: @escaping (Result<ChatRoomResponse, Error>) -> Void) {
+        provider.request(.createRoom(listingId: listingId, content: content)) { result in
             completion(Self.decode(ChatRoomResponse.self, from: result))
         }
     }

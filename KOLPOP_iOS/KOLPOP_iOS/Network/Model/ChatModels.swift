@@ -19,11 +19,20 @@ struct ChatMessageResponse: Decodable {
     let createdAt: String
 }
 
+struct ChatListingResponse: Decodable {
+    let listingId: Int
+    let title: String
+    let thumbnailUrl: String?
+}
+
 struct ChatRoomResponse: Decodable {
     let roomId: Int
+    let listing: ChatListingResponse
     let founder: ChatUserResponse
     let landlord: ChatUserResponse
+    let status: String
     let createdAt: String
+    let acceptedAt: String?
 }
 
 struct ChatSendMessageRequest: Encodable {

@@ -172,10 +172,10 @@ final class ListingDetailViewController: UIViewController {
     }
 
     @objc private func inquireTapped() {
-        guard let info else { return }
+        guard let listingId else { return }
 
         loadingOverlayView.isHidden = false
-        chatService.createRoom(landlordId: info.landlordId) { [weak self] result in
+        chatService.createRoom(listingId: listingId, content: "안녕하세요! 문의드립니다.") { [weak self] result in
             guard let self else { return }
             DispatchQueue.main.async {
                 self.loadingOverlayView.isHidden = true
