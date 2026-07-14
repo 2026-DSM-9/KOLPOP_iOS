@@ -1,210 +1,147 @@
+//
+//  SignUpAuthViewController.swift
+//  KOLPOP_iOS
+//
+
 import UIKit
 import SnapKit
 import Then
 
 final class SignUpAuthViewController: UIViewController {
-    
-    private let phoneTextField = UITextField().then {
-        $0.textColor = UIColor(named: "0F1010")
-        $0.font = .systemFont(ofSize: 16, weight: .regular)
-        $0.attributedPlaceholder = NSAttributedString(
-            string: "전화번호를 입력해 주세요",
-            attributes: [.foregroundColor: UIColor(named: "D9D9D9")!]
-        )
-        $0.layer.borderColor = UIColor(named: "D9D9D9")!.cgColor
-        $0.layer.borderWidth = 1
-        $0.layer.cornerRadius = 25
-        $0.keyboardType = .numberPad
-        
-        let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 52))
-        $0.leftView = paddingView
-        $0.leftViewMode = .always
+
+    // TODO: 실제 인증 API 연동 전까지는 이 코드로만 인증에 성공한 것으로 처리한다.
+    private static let mockValidVerificationCode = "123456"
+
+    private let backButton = UIButton(type: .system).then {
+        $0.setImage(UIImage(systemName: "arrow.left"), for: .normal)
+        $0.tintColor = UIColor(named: "0F1010")
     }
-    
-    private let sendCodeButton = UIButton().then {
+
+    private let brandHeaderView = SignUpBrandHeaderView()
+
+    private let phoneField = LabeledTextFieldView(title: "전화번호", placeholder: "전화번호를 입력해주세요").then {
+        $0.textField.keyboardType = .numberPad
+    }
+
+    private let sendCodeButton = UIButton(type: .system).then {
         $0.setTitle("인증 코드 발송", for: .normal)
-        $0.setTitleColor(UIColor(named: "767778"), for: .normal)
-        $0.titleLabel?.font = .systemFont(ofSize: 14, weight: .regular)
-        $0.backgroundColor = UIColor(named: "F8F8F8")
+        $0.titleLabel?.font = .paperlogy(.medium, size: 14)
         $0.layer.cornerRadius = 16
         $0.isEnabled = false
     }
-    
-    private let codeTextField = UITextField().then {
-        $0.textColor = UIColor(named: "0F1010")
-        $0.font = .systemFont(ofSize: 16, weight: .regular)
-        $0.attributedPlaceholder = NSAttributedString(
-            string: "인증코드를 입력해주세요",
-            attributes: [.foregroundColor: UIColor(named: "D9D9D9")!]
-        )
-        $0.layer.borderColor = UIColor(named: "D9D9D9")!.cgColor
-        $0.layer.borderWidth = 1
-        $0.layer.cornerRadius = 25
-        $0.keyboardType = .numberPad
-        
-        let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 52))
-        $0.leftView = paddingView
-        $0.leftViewMode = .always
+
+    private let codeField = LabeledTextFieldView(title: "인증코드", placeholder: "인증코드를 입력해주세요").then {
+        $0.textField.keyboardType = .numberPad
     }
-    
-    private let nextButton = UIButton().then {
+
+    private let statusLabel = UILabel().then {
+        $0.font = .paperlogy(.medium, size: 15)
+        $0.textColor = .systemRed
+        $0.textAlignment = .center
+        $0.isHidden = true
+    }
+
+    private let nextButton = UIButton(type: .system).then {
         $0.setTitle("다음", for: .normal)
         $0.setTitleColor(.white, for: .normal)
-        $0.titleLabel?.font = .systemFont(ofSize: 16, weight: .bold)
-        $0.backgroundColor = UIColor(named: "99DFF9")
+        $0.titleLabel?.font = .paperlogy(.bold, size: 16)
         $0.layer.cornerRadius = 26
         $0.isEnabled = false
     }
-    
-    @objc func nextButtonDidTap() {
-        let signUpInfoViewController = SignUpInfoViewController()
-        signUpInfoViewController.modalPresentationStyle = .fullScreen
-        present(signUpInfoViewController, animated: false, completion: nil)
-    }
-    
-    @objc private func textFieldDidChange() {
-        let isPhoneNotEmpty = !(phoneTextField.text?.isEmpty ?? true)
-        let isCodeNotEmpty = !(codeTextField.text?.isEmpty ?? true)
-        
-        if isPhoneNotEmpty {
-            sendCodeButton.backgroundColor = UIColor(named: "BFEBFB")
-            sendCodeButton.setTitleColor(UIColor(named: "00688F"), for: .normal)
-            sendCodeButton.isEnabled = true
-        } else {
-            sendCodeButton.backgroundColor = UIColor(named: "F8F8F8")
-            sendCodeButton.setTitleColor(UIColor(named: "767778"), for: .normal)
-            sendCodeButton.isEnabled = false
-        }
-        
-        if isPhoneNotEmpty && isCodeNotEmpty {
-            nextButton.backgroundColor = UIColor(named: "33BEF2")
-            nextButton.setTitleColor(.white, for: .normal)
-            nextButton.isEnabled = true
-        } else {
-            nextButton.backgroundColor = UIColor(named: "99DFF9")
-            nextButton.setTitleColor(.white, for: .normal)
-            nextButton.isEnabled = false
-        }
-    }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        
-        phoneTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
-        codeTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
-        nextButton.addTarget(self, action: #selector(nextButtonDidTap), for: .touchUpInside)
-        
-        let arrow = UIButton().then {
-            $0.setImage(UIImage(systemName: "arrow.left"), for: .normal)
-            $0.tintColor = UIColor(named: "0F1010")
+        setupLayout()
+        setupActions()
+        updateSendCodeButtonStyle()
+        updateNextButtonStyle()
+    }
+
+    private func setupLayout() {
+        [backButton, brandHeaderView, phoneField, sendCodeButton, codeField, statusLabel, nextButton].forEach {
             view.addSubview($0)
-            $0.snp.makeConstraints {
-                $0.width.height.equalTo(24)
-                $0.top.equalTo(view.safeAreaLayoutGuide).offset(20)
-                $0.leading.equalToSuperview().inset(24)
-            }
         }
-        
-        let titleLabel = UILabel().then {
-            $0.font = .systemFont(ofSize: 32, weight: .bold)
-            $0.textColor = UIColor(named: "0F1010")
-            $0.text = "콜팝"
+
+        backButton.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(20)
+            make.leading.equalToSuperview().offset(24)
+            make.width.height.equalTo(24)
         }
-        let subTitleLabel = UILabel().then {
-            $0.text = "빈 건물 찾아 팝업 열기"
-            $0.textColor = UIColor(named: "C6C6C7")
-            $0.font = .systemFont(ofSize: 20, weight: .bold)
+        brandHeaderView.snp.makeConstraints { make in
+            make.top.equalTo(backButton.snp.bottom).offset(40)
+            make.leading.trailing.equalToSuperview().inset(20)
         }
-        
-        let phoneTitle = UILabel().then {
-            $0.text = "전화번호"
-            $0.textColor = UIColor(named: "A3A4A5")
-            $0.font = .systemFont(ofSize: 16, weight: .regular)
+        phoneField.snp.makeConstraints { make in
+            make.top.equalTo(brandHeaderView.snp.bottom).offset(48)
+            make.leading.trailing.equalToSuperview().inset(32)
         }
-        
-        let codeTitle = UILabel().then {
-            $0.text = "인증코드"
-            $0.textColor = UIColor(named: "A3A4A5")
-            $0.font = .systemFont(ofSize: 16, weight: .regular)
+        sendCodeButton.snp.makeConstraints { make in
+            make.top.equalTo(phoneField.snp.bottom).offset(12)
+            make.trailing.equalToSuperview().offset(-32)
+            make.width.equalTo(113)
+            make.height.equalTo(32)
         }
-        
-        let titleView = UIView().then {
-            $0.addSubview(titleLabel)
-            $0.addSubview(subTitleLabel)
-            
-            titleLabel.snp.makeConstraints {
-                $0.centerX.equalToSuperview()
-                $0.top.equalToSuperview().inset(40)
-                $0.height.equalTo(38)
-            }
-            subTitleLabel.snp.makeConstraints {
-                $0.centerX.equalToSuperview()
-                $0.top.equalTo(titleLabel.snp.bottom).offset(4)
-                $0.height.equalTo(24)
-                $0.bottom.equalToSuperview()
-            }
+        codeField.snp.makeConstraints { make in
+            make.top.equalTo(sendCodeButton.snp.bottom).offset(12)
+            make.leading.trailing.equalToSuperview().inset(32)
         }
-        let inputView = UIView().then {
-            $0.addSubview(phoneTitle)
-            $0.addSubview(phoneTextField)
-            $0.addSubview(sendCodeButton)
-            $0.addSubview(codeTitle)
-            $0.addSubview(codeTextField)
-            
-            phoneTitle.snp.makeConstraints {
-                $0.top.equalToSuperview()
-                $0.leading.trailing.equalToSuperview().inset(32)
-                $0.height.equalTo(19)
-            }
-            phoneTextField.snp.makeConstraints {
-                $0.height.equalTo(52)
-                $0.leading.trailing.equalToSuperview().inset(32)
-                $0.top.equalTo(phoneTitle.snp.bottom).offset(12)
-            }
-            sendCodeButton.snp.makeConstraints {
-                $0.trailing.equalToSuperview().inset(32)
-                $0.top.equalTo(phoneTextField.snp.bottom).offset(12)
-                $0.width.equalTo(113)
-                $0.height.equalTo(32)
-            }
-            codeTitle.snp.makeConstraints {
-                $0.top.equalTo(sendCodeButton.snp.bottom).offset(12)
-                $0.leading.equalToSuperview().inset(32)
-                $0.height.equalTo(19)
-            }
-            codeTextField.snp.makeConstraints {
-                $0.leading.trailing.equalToSuperview().inset(32)
-                $0.top.equalTo(codeTitle.snp.bottom).offset(12)
-                $0.height.equalTo(52)
-                $0.bottom.equalToSuperview()
-            }
+        statusLabel.snp.makeConstraints { make in
+            make.top.equalTo(codeField.snp.bottom).offset(12)
+            make.leading.trailing.equalToSuperview().inset(32)
         }
-        let codeCheckText = UILabel().then {
-            $0.text = "인증코드를 확인해주세요"
-            $0.textColor = UIColor(named: "FF5757")
-            $0.font = .systemFont(ofSize: 16)
-            $0.textAlignment = .center
+        nextButton.snp.makeConstraints { make in
+            make.top.equalTo(statusLabel.snp.bottom).offset(20)
+            make.leading.trailing.equalToSuperview().inset(32)
+            make.height.equalTo(52)
         }
-        
-        let stackView = UIStackView(arrangedSubviews: [titleView, inputView]).then {
-            $0.axis = .vertical
-            $0.spacing = 36
-            $0.distribution = .fill
-            $0.alignment = .fill
+    }
+
+    private func setupActions() {
+        backButton.addTarget(self, action: #selector(backTapped), for: .touchUpInside)
+        sendCodeButton.addTarget(self, action: #selector(sendCodeTapped), for: .touchUpInside)
+        nextButton.addTarget(self, action: #selector(nextTapped), for: .touchUpInside)
+        phoneField.textField.addTarget(self, action: #selector(fieldsDidChange), for: .editingChanged)
+        codeField.textField.addTarget(self, action: #selector(fieldsDidChange), for: .editingChanged)
+    }
+
+    @objc private func backTapped() {
+        navigationController?.popViewController(animated: true)
+    }
+
+    @objc private func fieldsDidChange() {
+        statusLabel.isHidden = true
+        updateSendCodeButtonStyle()
+        updateNextButtonStyle()
+    }
+
+    private func updateSendCodeButtonStyle() {
+        let isPhoneFilled = !(phoneField.textField.text ?? "").isEmpty
+        sendCodeButton.isEnabled = isPhoneFilled
+        sendCodeButton.backgroundColor = UIColor(named: isPhoneFilled ? "BFEBFB" : "F8F8F8")
+        sendCodeButton.setTitleColor(UIColor(named: isPhoneFilled ? "00688F" : "767778"), for: .normal)
+    }
+
+    private func updateNextButtonStyle() {
+        let isPhoneFilled = !(phoneField.textField.text ?? "").isEmpty
+        let isCodeFilled = !(codeField.textField.text ?? "").isEmpty
+        let isReady = isPhoneFilled && isCodeFilled
+        nextButton.isEnabled = isReady
+        nextButton.backgroundColor = UIColor(named: isReady ? "33BEF2" : "99DFF9")
+    }
+
+    @objc private func sendCodeTapped() {
+        // TODO: 실제 인증 코드 발송 API 연동 예정
+    }
+
+    @objc private func nextTapped() {
+        guard codeField.textField.text == Self.mockValidVerificationCode else {
+            statusLabel.text = "인증코드를 확인해주세요"
+            statusLabel.isHidden = false
+            return
         }
-        
-        view.addSubview(stackView)
-        stackView.snp.makeConstraints {
-            $0.top.equalToSuperview().offset(180)
-            $0.leading.trailing.equalToSuperview()
-        }
-        
-        view.addSubview(nextButton)
-        nextButton.snp.makeConstraints {
-            $0.leading.trailing.equalToSuperview().inset(32)
-            $0.top.equalTo(stackView.snp.bottom).offset(36)
-            $0.height.equalTo(52)
-        }
+
+        let phone = phoneField.textField.text ?? ""
+        navigationController?.pushViewController(SignUpInfoViewController(verifiedPhone: phone), animated: true)
     }
 }
