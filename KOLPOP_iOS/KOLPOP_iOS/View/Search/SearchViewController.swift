@@ -287,8 +287,9 @@ extension SearchViewController: UITableViewDataSource {
         cell.onInquireTapped = {
             // TODO: 실제 문의하기 플로우 연동
         }
-        cell.onDetailTapped = {
-            // TODO: 매물 상세 화면 연동
+        cell.onDetailTapped = { [weak self] in
+            // TODO: 실제 매물 상세 API 연동 전까지는 목업 데이터를 사용한다.
+            self?.navigationController?.pushViewController(ListingDetailViewController(info: .mock), animated: true)
         }
         return cell
     }
