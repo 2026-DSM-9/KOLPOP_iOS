@@ -209,4 +209,9 @@ extension AIViewController: UITableViewDataSource {
     }
 }
 
-extension AIViewController: UITableViewDelegate {}
+extension AIViewController: UITableViewDelegate {
+
+    func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
+        UITableView.automaticDimension
+    }
+}
