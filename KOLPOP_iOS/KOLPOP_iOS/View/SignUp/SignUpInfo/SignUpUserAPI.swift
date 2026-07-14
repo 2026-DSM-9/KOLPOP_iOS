@@ -7,7 +7,7 @@ enum AuthAPI {
 
 extension AuthAPI: TargetType {
     var baseURL: URL {
-        return URL(string: "http://REDACTED_HOST:PORT/")! // 실제 베이스 URL로 변경 필요
+        return Secrets.signUpAPIBaseURL
     }
     
     var path: String {
