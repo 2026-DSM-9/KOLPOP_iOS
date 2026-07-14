@@ -91,14 +91,17 @@ final class ImageCarouselView: UIView {
         }
     }
 
-    /// 각 페이지의 leading을 이전 페이지의 trailing에 이어 붙여, 모든 페이지가 항상 같은
-    /// 기준(self 너비)으로 계산되도록 한다. (예전에는 leading 오프셋만 고정값인
-    /// UIScreen.main.bounds.width를 쓰고 너비는 self를 써서 스와이프 시 밀리는 문제가 있었음)
-    /// contentSize는 오토레이아웃 추론에만 맡기지 않고 명시적으로도 지정해, 페이지 경계 없이
-    /// 무한정 드래그되는 문제를 막는다.
+    /// contentLayoutGuide/frameLayoutGuide 기준으로 페이지를 배치하면 UIScrollView가
+    /// contentSize를 알아서 계산하고, bounds가 바뀌어도(회전 등) 계속 맞게 갱신해준다.
+    /// (예전에는 leading 오프셋만 고정값인 UIScreen.main.bounds.width를 쓰고 너비는 self를
+    /// 써서 스와이프 시 밀리는 문제가, 그 다음엔 contentSize 추론이 실제로 안 먹혀 페이지
+    /// 경계 없이 드래그되는 문제가 있었음.)
     private func layoutPages(count: Int, configureImageView: (UIImageView, Int) -> Void) {
         pageCount = count
         scrollView.subviews.forEach { $0.removeFromSuperview() }
+
+        let contentGuide = scrollView.contentLayoutGuide
+        let frameGuide = scrollView.frameLayoutGuide
 
         var previousImageView: UIImageView?
         for index in 0..<count {
@@ -109,23 +112,22 @@ final class ImageCarouselView: UIView {
             }
             configureImageView(imageView, index)
             scrollView.addSubview(imageView)
+
             imageView.snp.makeConstraints { make in
-                make.top.bottom.equalToSuperview()
-                make.width.equalTo(self)
+                make.top.bottom.equalTo(contentGuide)
+                make.width.equalTo(frameGuide)
                 if let previousImageView {
                     make.leading.equalTo(previousImageView.snp.trailing)
                 } else {
-                    make.leading.equalToSuperview()
+                    make.leading.equalTo(contentGuide)
                 }
                 if index == count - 1 {
-                    make.trailing.equalToSuperview()
+                    make.trailing.equalTo(contentGuide)
                 }
             }
             previousImageView = imageView
         }
 
-        layoutIfNeeded()
-        scrollView.contentSize = CGSize(width: bounds.width * CGFloat(count), height: bounds.height)
         updatePage(0)
     }
 
