@@ -7,7 +7,7 @@ import Foundation
 
 final class ChatSocketService {
 
-    private let socketURL = URL(string: "ws://43.201.99.20:8080/ws/chat")!
+    private let socketURL = Secrets.chatSocketURL
     private let stompClient = StompClient()
     private var pendingSubscription: (roomId: Int, onMessage: (ChatMessageResponse) -> Void)?
 

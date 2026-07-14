@@ -3,7 +3,7 @@
 //  KOLPOP_iOS
 //
 //  SockJS 없이 순수 WebSocket 위에서 동작하는 최소 STOMP 1.2 클라이언트.
-//  서버 스펙: ws://43.201.99.20:8080/ws/chat, CONNECT 헤더로 Authorization: Bearer {accessToken} 전달.
+//  서버 스펙: Secrets.chatSocketURL, CONNECT 헤더로 Authorization: Bearer {accessToken} 전달.
 //
 
 import Foundation
