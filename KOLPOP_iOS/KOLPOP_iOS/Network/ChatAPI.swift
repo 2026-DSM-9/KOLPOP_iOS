@@ -55,13 +55,35 @@ extension ChatAPI: TargetType {
     }
 }
 
+/// 배열 안의 항목 하나가 디코딩에 실패해도 전체 배열이 통째로 실패하지 않도록,
+/// 실패한 항목만 nil로 건너뛰기 위한 래퍼.
+private struct FailableDecodable<T: Decodable>: Decodable {
+    let value: T?
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        value = try? container.decode(T.self)
+    }
+}
+
 final class ChatService {
 
     private let provider = MoyaProvider<ChatAPI>(plugins: [MoyaLoggingPlugin()])
 
     func fetchRooms(completion: @escaping (Result<[ChatRoomResponse], Error>) -> Void) {
         provider.request(.rooms) { result in
-            completion(Self.decode([ChatRoomResponse].self, from: result))
+            switch result {
+            case .success(let response):
+                do {
+                    let decoded = try JSONDecoder().decode(ApiResponse<[FailableDecodable<ChatRoomResponse>]>.self, from: response.data)
+                    let rooms = (decoded.data ?? []).compactMap(\.value)
+                    completion(.success(rooms))
+                } catch {
+                    completion(.failure(error))
+                }
+            case .failure(let error):
+                completion(.failure(error))
+            }
         }
     }
 
