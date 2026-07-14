@@ -236,7 +236,7 @@ final class SearchViewController: UIViewController {
         suggestionTableView.reloadData()
     }
 
-    private func fetchMapListings() {
+    private func fetchMapListings(autoSelectFirstResult: Bool = false) {
         let region = mapView.region
         let minLat = region.center.latitude - region.span.latitudeDelta / 2
         let maxLat = region.center.latitude + region.span.latitudeDelta / 2
@@ -267,6 +267,10 @@ final class SearchViewController: UIViewController {
                 self.emptyLabel.isHidden = !self.nearbyListings.isEmpty
                 self.tableView.isHidden = self.nearbyListings.isEmpty
                 self.tableView.reloadData()
+
+                if autoSelectFirstResult, let firstListing = self.nearbyListings.first {
+                    self.selectListing(id: firstListing.id)
+                }
             }
         }
     }
@@ -376,12 +380,12 @@ extension SearchViewController: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if tableView === suggestionTableView {
-            // 주소 추천 API는 좌표를 내려주지 않아 지도를 이동시키지는 못하고, 키워드로 목록만 다시 조회한다.
+            // 주소 추천 API는 좌표를 내려주지 않아, 키워드로 다시 조회한 결과 중 첫 번째 매물을 지도/목록에서 선택 상태로 만든다.
             searchFieldView.textField.text = addressSuggestions[indexPath.row].fullAddress
             searchFieldView.textField.resignFirstResponder()
             addressSuggestions = []
             updateSuggestionTable()
-            fetchMapListings()
+            fetchMapListings(autoSelectFirstResult: true)
             return
         }
 
