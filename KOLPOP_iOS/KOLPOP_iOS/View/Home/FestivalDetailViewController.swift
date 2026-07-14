@@ -50,6 +50,7 @@ final class FestivalDetailViewController: UIViewController {
         headerCardView.configure(with: festival, nearbyVacantBuildingCount: buildings.count)
 
         tableView.dataSource = self
+        tableView.delegate = self
         tableView.isHidden = buildings.isEmpty
         emptyStateLabel.isHidden = !buildings.isEmpty
     }
@@ -84,5 +85,14 @@ extension FestivalDetailViewController: UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: BuildingListingCell.reuseIdentifier, for: indexPath) as! BuildingListingCell
         cell.configure(with: buildings[indexPath.row])
         return cell
+    }
+}
+
+extension FestivalDetailViewController: UITableViewDelegate {
+
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        // TODO: 실제 매물 상세 API 연동 전까지는 목업 데이터를 사용한다.
+        navigationController?.pushViewController(ListingDetailViewController(info: .mock), animated: true)
     }
 }
