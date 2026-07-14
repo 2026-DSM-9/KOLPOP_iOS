@@ -12,9 +12,6 @@ final class SignUpInfoViewController: UIViewController {
     private let authService = AuthService()
     private let verifiedPhone: String
 
-    // TODO: 실제 아이디 중복확인 API 연동 전까지는 이 값만 중복으로 처리한다.
-    private static let mockDuplicateID = "circle08"
-
     private let backButton = UIButton(type: .system).then {
         $0.setImage(UIImage(systemName: "arrow.left"), for: .normal)
         $0.tintColor = UIColor(named: "0F1010")
@@ -66,6 +63,7 @@ final class SignUpInfoViewController: UIViewController {
     }
 
     private var isIDVerifiedAvailable = false
+    private var isCheckingID = false
 
     init(verifiedPhone: String) {
         self.verifiedPhone = verifiedPhone
@@ -177,8 +175,10 @@ final class SignUpInfoViewController: UIViewController {
 
     @objc private func idFieldDidChange() {
         isIDVerifiedAvailable = false
+        isCheckingID = false
         idFeedbackLabel.isHidden = true
         updateIDCheckButtonStyle()
+        updateSignUpButtonStyle()
     }
 
     @objc private func fieldsDidChange() {
@@ -188,30 +188,48 @@ final class SignUpInfoViewController: UIViewController {
 
     private func updateIDCheckButtonStyle() {
         let isIDFilled = !(idField.textField.text ?? "").isEmpty
-        idCheckButton.isEnabled = isIDFilled
-        idCheckButton.backgroundColor = UIColor(named: isIDFilled ? "BFEBFB" : "F8F8F8")
-        idCheckButton.setTitleColor(UIColor(named: isIDFilled ? "00688F" : "767778"), for: .normal)
+        let isEnabled = isIDFilled && !isCheckingID
+        idCheckButton.isEnabled = isEnabled
+        idCheckButton.backgroundColor = UIColor(named: isEnabled ? "BFEBFB" : "F8F8F8")
+        idCheckButton.setTitleColor(UIColor(named: isEnabled ? "00688F" : "767778"), for: .normal)
     }
 
     private func updateSignUpButtonStyle() {
         let isReady = ![nameField, idField, passwordField, passwordCheckField]
             .map { $0.textField.text ?? "" }
-            .contains(where: \.isEmpty)
+            .contains(where: \.isEmpty) && isIDVerifiedAvailable
         signUpButton.isEnabled = isReady
         signUpButton.backgroundColor = UIColor(named: isReady ? "33BEF2" : "99DFF9")
     }
 
     @objc private func idCheckTapped() {
-        // TODO: 실제 아이디 중복확인 API 연동 예정
+        guard let loginId = idField.textField.text, !loginId.isEmpty else { return }
+
+        isCheckingID = true
+        updateIDCheckButtonStyle()
         idFeedbackLabel.isHidden = false
-        if idField.textField.text == Self.mockDuplicateID {
-            idFeedbackLabel.text = "중복된 아이디 입니다"
-            idFeedbackLabel.textColor = .systemRed
-            isIDVerifiedAvailable = false
-        } else {
-            idFeedbackLabel.text = "사용 가능한 아이디 입니다"
-            idFeedbackLabel.textColor = .systemGreen
-            isIDVerifiedAvailable = true
+        idFeedbackLabel.text = "확인 중입니다"
+        idFeedbackLabel.textColor = UIColor(named: "767778")
+
+        authService.checkID(loginId: loginId) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self, self.idField.textField.text == loginId else { return }
+
+                self.isCheckingID = false
+                switch result {
+                case .success(let isAvailable):
+                    self.isIDVerifiedAvailable = isAvailable
+                    self.idFeedbackLabel.text = isAvailable ? "사용 가능한 아이디 입니다" : "중복된 아이디 입니다"
+                    self.idFeedbackLabel.textColor = isAvailable ? .systemGreen : .systemRed
+                case .failure:
+                    self.isIDVerifiedAvailable = false
+                    self.idFeedbackLabel.text = "아이디 확인에 실패했습니다"
+                    self.idFeedbackLabel.textColor = .systemRed
+                }
+
+                self.updateIDCheckButtonStyle()
+                self.updateSignUpButtonStyle()
+            }
         }
     }
 

@@ -9,6 +9,11 @@
 		<string>Paperlogy-6SemiBold.ttf</string>
 		<string>Paperlogy-7Bold.ttf</string>
 	</array>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
