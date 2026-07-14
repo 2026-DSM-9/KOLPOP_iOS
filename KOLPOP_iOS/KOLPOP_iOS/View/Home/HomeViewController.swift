@@ -45,6 +45,12 @@ final class HomeViewController: UIViewController {
         fetchPopularListings()
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // 매물 상세에서 찜하기 등으로 하트 수가 바뀔 수 있어 다시 보일 때마다 최신 값으로 갱신한다.
+        fetchPopularListings()
+    }
+
     private func fetchPopularListings() {
         listingService.fetchListings { [weak self] result in
             guard let self else { return }
