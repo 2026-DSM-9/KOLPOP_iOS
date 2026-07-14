@@ -35,10 +35,8 @@ extension ChatDetailMessage {
 
     private static let displayTimeFormatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateFormat = "a h:mm"
+        formatter.dateFormat = "HH:mm"
         formatter.locale = Locale(identifier: "ko_KR")
-        formatter.amSymbol = "오전"
-        formatter.pmSymbol = "오후"
         return formatter
     }()
 
