@@ -35,7 +35,7 @@ extension AuthAPI: TargetType {
         switch self {
         case let .signup(nickname, name, password, passwordConfirm, phone):
             let params: [String: Any] = [
-                "nickname": nickname,
+                "loginId": nickname,
                 "name": name,
                 "password": password,
                 "passwordConfirm": passwordConfirm,
@@ -81,7 +81,7 @@ final class AuthService {
                         let decoder = JSONDecoder()
                         let signUpResult = try decoder.decode(SignUpResponse.self, from: response.data)
                         print("회원가입 디코딩 성공! 토큰: \(signUpResult.data?.accessToken ?? "없음")")
-                        completion(.success(signUpResult))
+                        completion(.success(signUpResult.success))
                     } catch {
                         print("🚨 성공 응답이지만 JSON 디코딩 실패: \(error)")
                         completion(.failure(error))

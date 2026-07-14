@@ -252,24 +252,3 @@ final class SignUpInfoViewController: UIViewController {
         }
     }
 }
-
-// MARK: - UITextFieldDelegate
-
-extension SignUpInfoViewController: UITextFieldDelegate {
-    
-    // 텍스트 필드 입력이 시작될 때 활성화된 텍스트 필드를 추적해 줌
-    func textFieldDidBeginEditing(_ textField: UITextField) {
-        activeTextField = textField
-    }
-    
-    // 입력이 끝나면 nil로 비워주기
-    func textFieldDidEndEditing(_ textField: UITextField) {
-        activeTextField = nil
-    }
-    
-    // 키보드에 있는 "return" 혹은 "완료" 버튼을 누르면 키보드가 내려가게 함
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        textField.resignFirstResponder()
-        return true
-    }
-}
