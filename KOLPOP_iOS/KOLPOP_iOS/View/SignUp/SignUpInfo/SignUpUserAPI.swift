@@ -52,7 +52,7 @@ extension AuthAPI: TargetType {
 
 final class AuthService {
 
-    private let provider = MoyaProvider<AuthAPI>()
+    private let provider = MoyaProvider<AuthAPI>(plugins: [MoyaLoggingPlugin()])
 
     func signup(nickname: String, name: String, password: String, passwordConfirm: String, phone: String, completion: @escaping (Result<Bool, Error>) -> Void) {
         provider.request(.signup(nickname: nickname, name: name, password: password, passwordConfirm: passwordConfirm, phone: phone)) { result in
