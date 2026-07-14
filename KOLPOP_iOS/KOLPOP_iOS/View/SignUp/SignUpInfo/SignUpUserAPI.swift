@@ -20,7 +20,7 @@ extension AuthAPI: TargetType {
     var path: String {
         switch self {
         case .signup:
-            return "/api/auth/signup"
+            return "auth/entrepreneur/signup"
         }
     }
 
@@ -49,6 +49,24 @@ extension AuthAPI: TargetType {
         ["Content-Type": "application/json"]
     }
 }
+struct SignUpResponse: Codable {
+    let success: Bool
+    let data: SignUpData?
+    let error: String?
+}
+
+struct SignUpData: Codable {
+    let accessToken: String
+    let expiresIn: Int
+    let user: SignUpUser
+}
+
+struct SignUpUser: Codable {
+    let userId: Int
+    let phone: String
+    let name: String
+    let role: String
+}
 
 final class AuthService {
 
@@ -59,11 +77,31 @@ final class AuthService {
             switch result {
             case .success(let response):
                 if response.statusCode == 201 {
-                    completion(.success(true))
-                } else {
-                    let error = NSError(domain: "SignupError", code: response.statusCode, userInfo: nil)
+                    do {
+                        let decoder = JSONDecoder()
+                        let signUpResult = try decoder.decode(SignUpResponse.self, from: response.data)
+                        print("회원가입 디코딩 성공! 토큰: \(signUpResult.data?.accessToken ?? "없음")")
+                        completion(.success(signUpResult))
+                    } catch {
+                        print("🚨 성공 응답이지만 JSON 디코딩 실패: \(error)")
+                        completion(.failure(error))
+                    }
+                }
+                // 2️⃣ 404를 포함한 에러 코드(4xx, 5xx)일 때는 디코딩하지 않고 바로 실패 처리!
+                else {
+                    // 서버가 보내준 에러 메시지를 가볍게 스트링으로 찍어보기
+                    if let rawResponseString = String(data: response.data, encoding: .utf8) {
+                        print("서버 에러 바디 원본: \(rawResponseString)")
+                    }
+                    
+                    let error = NSError(
+                        domain: "SignupError",
+                        code: response.statusCode,
+                        userInfo: [NSLocalizedDescriptionKey: "서버 연결 실패 (에러 코드: \(response.statusCode)) - 요청 경로(URL Path)를 다시 확인해 주세요!"]
+                    )
                     completion(.failure(error))
                 }
+                
             case .failure(let error):
                 completion(.failure(error))
             }
