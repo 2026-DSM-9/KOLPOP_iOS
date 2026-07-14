@@ -9,9 +9,8 @@ import Then
 
 final class LoginViewController: UIViewController {
 
-    // TODO: 실제 로그인 API 연동 전까지는 이 계정으로만 로그인에 성공한 것으로 처리한다.
-    private static let mockValidID = "circle08"
-    private static let mockValidPassword = "circlecircle"
+    private let authService = AuthService()
+    private let loadingOverlayView = LoadingOverlayView(message: "로그인 중이에요")
 
     private let brandHeaderView = SignUpBrandHeaderView()
 
@@ -57,8 +56,13 @@ final class LoginViewController: UIViewController {
     }
 
     private func setupLayout() {
-        [brandHeaderView, idField, passwordField, errorLabel, loginButton, signUpLinkButton].forEach {
+        [brandHeaderView, idField, passwordField, errorLabel, loginButton, signUpLinkButton, loadingOverlayView].forEach {
             view.addSubview($0)
+        }
+
+        loadingOverlayView.isHidden = true
+        loadingOverlayView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
         }
 
         brandHeaderView.snp.makeConstraints { make in
@@ -107,16 +111,27 @@ final class LoginViewController: UIViewController {
     }
 
     @objc private func loginTapped() {
-        // TODO: 실제 로그인 API 연동 예정
         guard
-            idField.textField.text == Self.mockValidID,
-            passwordField.textField.text == Self.mockValidPassword
-        else {
-            errorLabel.isHidden = false
-            return
-        }
+            let loginId = idField.textField.text, !loginId.isEmpty,
+            let password = passwordField.textField.text, !password.isEmpty
+        else { return }
 
-        moveToMainScreen()
+        errorLabel.isHidden = true
+        loadingOverlayView.isHidden = false
+
+        authService.loginAsEntrepreneur(loginId: loginId, password: password) { [weak self] result in
+            guard let self else { return }
+            DispatchQueue.main.async {
+                self.loadingOverlayView.isHidden = true
+                switch result {
+                case .success:
+                    self.moveToMainScreen()
+                case .failure(let error):
+                    print("로그인 실패: \(error)")
+                    self.errorLabel.isHidden = false
+                }
+            }
+        }
     }
 
     @objc private func signUpTapped() {

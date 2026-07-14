@@ -12,6 +12,7 @@ enum AuthAPI {
     case idCheck(loginId: String)
     case phoneNumber(phone: String)
     case phoneCheck(phone: String, code: String)
+    case entrepreneurLogin(loginId: String, password: String)
 }
 
 extension AuthAPI: TargetType {
@@ -30,6 +31,8 @@ extension AuthAPI: TargetType {
             return "auth/send"
         case .phoneCheck:
             return "auth/verify"
+        case .entrepreneurLogin:
+            return "auth/entrepreneur/login"
         }
     }
 
@@ -70,6 +73,13 @@ extension AuthAPI: TargetType {
                 "code": code
             ]
             return .requestParameters(parameters: params, encoding: JSONEncoding.default)
+
+        case let .entrepreneurLogin(loginId, password):
+            let params: [String: Any] = [
+                "loginId": loginId,
+                "password": password
+            ]
+            return .requestParameters(parameters: params, encoding: JSONEncoding.default)
         }
     }
 
@@ -99,6 +109,19 @@ struct SignUpUser: Codable {
 struct IDCheckResponse: Codable {
     let success: Bool
     let data: String?
+}
+
+struct FounderLoginResponse: Decodable {
+    let accessToken: String
+    let refreshToken: String
+    let expiresIn: Int
+    let user: LoginUserResponse
+}
+
+struct LoginUserResponse: Decodable {
+    let userId: String
+    let phone: String
+    let name: String
 }
 
 final class AuthService {
@@ -177,6 +200,39 @@ final class AuthService {
     func verifyVerificationCode(phone: String, code: String, completion: @escaping (Result<Bool, Error>) -> Void) {
         provider.request(.phoneCheck(phone: phone, code: code)) { result in
             self.handleAuthenticationResponse(result, errorDomain: "PhoneVerificationCheckError", completion: completion)
+        }
+    }
+
+    func loginAsEntrepreneur(loginId: String, password: String, completion: @escaping (Result<FounderLoginResponse, Error>) -> Void) {
+        provider.request(.entrepreneurLogin(loginId: loginId, password: password)) { result in
+            switch result {
+            case .success(let response):
+                guard response.statusCode == 200 else {
+                    let error = NSError(
+                        domain: "LoginError",
+                        code: response.statusCode,
+                        userInfo: [NSLocalizedDescriptionKey: "아이디 또는 비밀번호를 확인해주세요."]
+                    )
+                    completion(.failure(error))
+                    return
+                }
+
+                do {
+                    let decoded = try JSONDecoder().decode(ApiResponse<FounderLoginResponse>.self, from: response.data)
+                    guard let loginResponse = decoded.data else {
+                        completion(.failure(NSError(domain: "LoginError", code: -1, userInfo: [NSLocalizedDescriptionKey: "로그인 응답이 올바르지 않습니다."])))
+                        return
+                    }
+                    TokenStore.shared.accessToken = loginResponse.accessToken
+                    TokenStore.shared.currentUserId = Int(loginResponse.user.userId)
+                    completion(.success(loginResponse))
+                } catch {
+                    completion(.failure(error))
+                }
+
+            case .failure(let error):
+                completion(.failure(error))
+            }
         }
     }
 
