@@ -14,7 +14,7 @@ final class AIChatHistoryViewController: UIViewController {
         AIChatHistoryItem(
             id: "0",
             title: "립스틱 사업 아이템 장소 추천",
-            lastMessagePreview: "AI 파트너야 고마워!",
+            lastMessagePreview: "요즘 폭염때문에 더워진 날씨!\n미니 선풍기로 벗어나보세요~^^",
             dateText: "2026.07.13",
             messages: [
                 ChatMessage(
@@ -26,14 +26,13 @@ final class AIChatHistoryViewController: UIViewController {
                     sender: .ai,
                     text: "요즘 폭염때문에 더워진 날씨!\n미니 선풍기로 벗어나보세요~^^",
                     showCopyButton: true
-                ),
-                ChatMessage(sender: .user, text: "AI 파트너야 고마워!")
+                )
             ]
         ),
         AIChatHistoryItem(
             id: "1",
             title: "홍대 유동인구 많은 1층 매물",
-            lastMessagePreview: "네, 마음에 드는 매물이 있으면 상세 화면에서 문의해보세요!",
+            lastMessagePreview: "네, 계약 기간이나 예산 범위를 알려주시면 더 좁혀서 추천해드릴게요!",
             dateText: "2026.07.12",
             messages: [
                 ChatMessage(
@@ -46,13 +45,30 @@ final class AIChatHistoryViewController: UIViewController {
                     text: "홍대입구역 인근 1층 매물을 찾아봤어요!\n\n📍 서울 마포구 홍대 인근\n- 유동인구 많은 메인 상권\n- 보증금 800만원 / 일 25만원",
                     showCopyButton: true
                 ),
-                ChatMessage(sender: .user, text: "네, 마음에 드는 매물이 있으면 상세 화면에서 문의해보세요!")
+                ChatMessage(sender: .user, text: "혹시 반려동물 동반 가능한 곳도 있어?"),
+                ChatMessage(
+                    sender: .ai,
+                    text: "네! 반려동물 동반 가능한 매물도 몇 곳 있어요.\n\n📍 서울 마포구 연남동 인근\n- 애견동반 카페 밀집 상권\n- 보증금 500만원 / 일 18만원",
+                    showCopyButton: true
+                ),
+                ChatMessage(sender: .user, text: "주차는 가능할까?"),
+                ChatMessage(
+                    sender: .ai,
+                    text: "연남동 매물은 건물 내 2대까지 주차 가능해요. 홍대 메인 상권 매물은 인근 공영주차장 이용을 추천드려요!",
+                    showCopyButton: true
+                ),
+                ChatMessage(sender: .user, text: "둘 다 마음에 드는데 뭐가 더 나을까?"),
+                ChatMessage(
+                    sender: .ai,
+                    text: "유동인구 위주면 홍대 메인 상권, 반려동물 동반 손님 타겟이면 연남동 쪽을 추천드려요!\n\n네, 계약 기간이나 예산 범위를 알려주시면 더 좁혀서 추천해드릴게요!",
+                    showCopyButton: true
+                )
             ]
         ),
         AIChatHistoryItem(
             id: "2",
             title: "강원도 축제 사업 아이디어 추천",
-            lastMessagePreview: "강원도에서 이러한 축제가 열리면 어떻게 해서 이런 사업 아이템 …",
+            lastMessagePreview: "강원도 지역 축제 특성에 맞춰 굿즈, 팝업 매장, 지역 특산물 콜라보 아이템을 추천드려요!",
             dateText: "2026.07.11",
             messages: [
                 ChatMessage(sender: .user, text: "강원도에서 이러한 축제가 열리면 어떻게 해서 이런 사업 아이템을 추천해줄 수 있어?"),
@@ -66,7 +82,7 @@ final class AIChatHistoryViewController: UIViewController {
         AIChatHistoryItem(
             id: "3",
             title: "겨울 시즌 팝업스토어 홍보 문구",
-            lastMessagePreview: "포스터 문구도 같이 만들어줘서 정말 도움됐어요!",
+            lastMessagePreview: "📋 포스터 문구\n\"WINTER ONLY POPUP\n12.20 - 1.3 단 15일간\"",
             dateText: "2026.07.10",
             messages: [
                 ChatMessage(
@@ -78,14 +94,13 @@ final class AIChatHistoryViewController: UIViewController {
                     sender: .ai,
                     text: "❄️ 인스타그램 게시글\n\"이 겨울, 단 2주만 만나는 특별한 공간 ☃️\n따뜻한 감성 가득한 팝업스토어에 놀러오세요!\"\n\n#겨울팝업 #한정팝업스토어\n\n📋 포스터 문구\n\"WINTER ONLY POPUP\n12.20 - 1.3 단 15일간\"",
                     showCopyButton: true
-                ),
-                ChatMessage(sender: .user, text: "포스터 문구도 같이 만들어줘서 정말 도움됐어요!")
+                )
             ]
         ),
         AIChatHistoryItem(
             id: "4",
             title: "대학가 상권 소품샵 아이템 추천",
-            lastMessagePreview: "타겟 고객층까지 짚어주셔서 참고하기 좋았어요",
+            lastMessagePreview: "💡 추천 아이템: 캐릭터 소품샵 / 폴라로이드 포토부스",
             dateText: "2026.07.09",
             messages: [
                 ChatMessage(sender: .user, text: "대학가 근처 팝업으로 어떤 아이템이 좋을까?"),
@@ -93,8 +108,7 @@ final class AIChatHistoryViewController: UIViewController {
                     sender: .ai,
                     text: "대학가 상권 특성을 고려한 추천이에요!\n\n💡 추천 아이템: 캐릭터 소품샵 / 폴라로이드 포토부스\n- 20대 초반 타겟, 사진 찍기 좋은 포토존 활용\n- 낮은 초기비용으로 짧은 팝업 운영에 적합",
                     showCopyButton: true
-                ),
-                ChatMessage(sender: .user, text: "타겟 고객층까지 짚어주셔서 참고하기 좋았어요")
+                )
             ]
         )
     ]
