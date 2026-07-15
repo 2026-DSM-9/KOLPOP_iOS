@@ -145,9 +145,15 @@ final class AIViewController: UIViewController {
         tableView.reloadData()
         scrollToBottom(animated: true)
 
+        let requestStartTime = Date()
         aiService.send(aiTarget(for: selectedCategoryIndex, message: text)) { [weak self] result in
             guard let self else { return }
-            DispatchQueue.main.async {
+            // 응답이 너무 빨리 오면(특히 실패 후 보여주는 목업 답변) 부자연스러워 보여
+            // 타이핑 표시가 최소한의 시간 동안은 유지되도록 한다.
+            let elapsed = Date().timeIntervalSince(requestStartTime)
+            let remainingDelay = max(0, Self.minimumReplyDelay - elapsed)
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + remainingDelay) {
                 switch result {
                 case .success(let reply):
                     self.receiveReply(reply)
@@ -158,6 +164,8 @@ final class AIViewController: UIViewController {
             }
         }
     }
+
+    private static let minimumReplyDelay: TimeInterval = 2.5
 
     /// 카테고리 칩과 AI 엔드포인트 매핑. "매물 추천"은 대화형 응답이 필요해
     /// (구조화된 필터를 받는) /ai/recommend/listings 대신 /ai/chat/listings를 사용한다.
