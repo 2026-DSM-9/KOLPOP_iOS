@@ -9,7 +9,7 @@ import Then
 
 final class FestivalDetailViewController: UIViewController {
 
-    private let festival: Festival
+    private let festival: ExternalFestival
     private let buildings: [PopularListing]
 
     private let headerCardView = FestivalInfoCardView(descriptionNumberOfLines: 0)
@@ -31,7 +31,7 @@ final class FestivalDetailViewController: UIViewController {
     }
 
     // TODO: 근처 빈 건물 매물 API 연동 전까지는 빈 배열을 기본값으로 사용
-    init(festival: Festival, buildings: [PopularListing] = []) {
+    init(festival: ExternalFestival, buildings: [PopularListing] = []) {
         self.festival = festival
         self.buildings = buildings
         super.init(nibName: nil, bundle: nil)
@@ -44,7 +44,7 @@ final class FestivalDetailViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        title = festival.name
+        title = festival.fstvlNm
         setupLayout()
 
         headerCardView.configure(with: festival, nearbyVacantBuildingCount: buildings.count)

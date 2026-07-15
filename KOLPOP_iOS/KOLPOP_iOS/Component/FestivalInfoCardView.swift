@@ -129,12 +129,12 @@ final class FestivalInfoCardView: UIView {
         }
     }
 
-    func configure(with festival: Festival, nearbyVacantBuildingCount: Int) {
-        titleLabel.text = festival.name
+    func configure(with festival: ExternalFestival, nearbyVacantBuildingCount: Int) {
+        titleLabel.text = festival.fstvlNm
         dDayLabel.text = festival.dDayText
         dateLabel.text = festival.dateRangeText
-        organizerLabel.text = "\(festival.place) · \(festival.region)"
-        descriptionLabel.text = festival.content ?? festival.address
+        organizerLabel.text = "\(festival.opar) · \(festival.mnnstNm)"
+        descriptionLabel.text = festival.fstvlCo
 
         let countText = "\(nearbyVacantBuildingCount)개"
         let text = "근처 빈 건물 \(countText)"

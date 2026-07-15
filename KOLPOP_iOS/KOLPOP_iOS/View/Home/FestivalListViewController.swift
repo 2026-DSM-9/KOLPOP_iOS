@@ -9,8 +9,8 @@ import Then
 
 final class FestivalListViewController: UIViewController {
 
-    private let festivalService = FestivalService()
-    private var festivals: [Festival] = []
+    private let festivalService = ExternalFestivalService()
+    private var festivals: [ExternalFestival] = []
     private var searchDebounceTimer: Timer?
 
     private let searchFieldView = SearchFieldView().then {
@@ -54,7 +54,7 @@ final class FestivalListViewController: UIViewController {
     }
 
     private func fetchFestivals(keyword: String? = nil) {
-        let completion: (Result<[Festival], Error>) -> Void = { [weak self] result in
+        festivalService.fetchFestivals(numOfRows: 50, keyword: keyword) { [weak self] result in
             guard let self else { return }
             DispatchQueue.main.async {
                 switch result {
@@ -65,14 +65,6 @@ final class FestivalListViewController: UIViewController {
                     print("축제 정보 조회 실패: \(error)")
                 }
             }
-        }
-
-        // 검색어가 없을 때는 전체 목록(과거 데이터 포함) 대신 현재 진행 중/예정인 축제만
-        // 내려주는 /festivals/upcoming을 사용한다. 검색어가 있을 때만 전체 목록에서 키워드로 찾는다.
-        if let keyword, !keyword.isEmpty {
-            festivalService.fetchFestivals(keyword: keyword, completion: completion)
-        } else {
-            festivalService.fetchUpcomingFestivals(completion: completion)
         }
     }
 
@@ -93,8 +85,8 @@ extension FestivalListViewController: UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: FestivalCardCell.reuseIdentifier, for: indexPath) as! FestivalCardCell
-        let festival = festivals[indexPath.row]
-        cell.configure(with: festival, nearbyVacantBuildingCount: festival.nearbyListingCount)
+        // TODO: 근처 빈 건물 매물 API 연동 전까지는 0으로 표시
+        cell.configure(with: festivals[indexPath.row], nearbyVacantBuildingCount: 0)
         return cell
     }
 }

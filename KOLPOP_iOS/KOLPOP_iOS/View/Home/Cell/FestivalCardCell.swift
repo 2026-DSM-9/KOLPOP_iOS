@@ -31,7 +31,7 @@ final class FestivalCardCell: UITableViewCell {
         }
     }
 
-    func configure(with festival: Festival, nearbyVacantBuildingCount: Int) {
+    func configure(with festival: ExternalFestival, nearbyVacantBuildingCount: Int) {
         cardView.configure(with: festival, nearbyVacantBuildingCount: nearbyVacantBuildingCount)
     }
 }
