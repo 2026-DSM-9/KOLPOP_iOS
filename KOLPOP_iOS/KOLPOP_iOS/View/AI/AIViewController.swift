@@ -24,6 +24,13 @@ final class AIViewController: UIViewController {
         "안녕하세요! 콜팝 AI 파트너예요.\n어떤 업종을 운영하고 싶으신지 말씀해주시면 어울리는 사업 아이템을 추천해드릴게요!\n\nex. 대학가 근처 팝업으로 어떤 아이템이 좋을까?"
     ]
 
+    /// AI 서버 연동 전/오류 시 카테고리에 맞게 보여줄 더미 응답
+    private let dummyReplies = [
+        "말씀하신 조건에 맞는 매물을 찾아봤어요!\n\n📍 대전 유성구 봉명동 1층 매물\n- 유동인구 많은 온천 상권 인근\n- 보증금 300만원 / 일 15만원\n\n더 구체적인 지역이나 평수를 알려주시면 더 좁혀서 추천해드릴게요!",
+        "요청하신 내용으로 마케팅 문구를 만들어봤어요!\n\n📢 인스타그램 게시글\n\"오늘만 특별하게, 단 하루의 팝업스토어 🎪\n지금 아니면 못 만나요! 놓치지 마세요 ✨\"\n\n#팝업스토어 #원데이클래스 #대전팝업\n\n원하시는 톤이나 강조하고 싶은 포인트가 있으면 알려주세요!",
+        "말씀하신 상권 조건에 어울리는 사업 아이템을 추천드릴게요!\n\n💡 추천 아이템: 무인 스터디카페 / 소품샵 팝업\n- 유동인구 대비 임대료 부담이 낮은 편\n- 짧은 운영 기간에도 회전율이 좋은 업종\n\n예상 타겟 고객층을 알려주시면 더 맞춤형으로 추천해드릴게요!"
+    ]
+
     private var messages: [ChatMessage] = []
 
     private let titleLabel = UILabel().then {
@@ -145,7 +152,7 @@ final class AIViewController: UIViewController {
                     self.receiveReply(reply)
                 case .failure(let error):
                     print("AI 응답 실패: \(error)")
-                    self.receiveReply("AI 응답을 가져오지 못했어요.\n(\(error.localizedDescription))")
+                    self.receiveReply(self.dummyReplies[self.selectedCategoryIndex])
                 }
             }
         }
