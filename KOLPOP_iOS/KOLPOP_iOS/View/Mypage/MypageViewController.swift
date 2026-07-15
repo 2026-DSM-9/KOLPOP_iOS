@@ -10,6 +10,7 @@ import Then
 final class MypageViewController: UIViewController {
 
     private let myPageService = MyPageService()
+    private let authService = AuthService()
     private var profile = UserProfile.mock
     private let loadingOverlayView = LoadingOverlayView(message: "내 정보를 불러오는 중이에요")
 
@@ -189,10 +190,34 @@ final class MypageViewController: UIViewController {
     private func confirmLogout() {
         let alert = UIAlertController(title: nil, message: "정말 로그아웃 할까요?", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "취소", style: .cancel))
-        alert.addAction(UIAlertAction(title: "로그아웃", style: .destructive) { _ in
-            // TODO: 실제 로그아웃 API 연동 예정
+        alert.addAction(UIAlertAction(title: "로그아웃", style: .destructive) { [weak self] _ in
+            self?.performLogout()
         })
         present(alert, animated: true)
+    }
+
+    private func performLogout() {
+        authService.logout { result in
+            if case let .failure(error) = result {
+                print("로그아웃 API 실패(로컬 로그아웃은 계속 진행): \(error)")
+            }
+            DispatchQueue.main.async {
+                TokenStore.shared.accessToken = nil
+                TokenStore.shared.currentUserId = nil
+                self.moveToLoginScreen()
+            }
+        }
+    }
+
+    private func moveToLoginScreen() {
+        guard
+            let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+            let window = windowScene.windows.first
+        else { return }
+
+        UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve) {
+            window.rootViewController = UINavigationController(rootViewController: LoginViewController())
+        }
     }
 
     private func confirmWithdraw() {
