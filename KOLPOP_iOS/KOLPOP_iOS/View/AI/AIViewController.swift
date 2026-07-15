@@ -87,6 +87,7 @@ final class AIViewController: UIViewController {
             scrollPosition: []
         )
         resetConversation(for: selectedCategoryIndex)
+        dismissKeyboardOnTap()
 
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillChangeFrame(_:)), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
     }
