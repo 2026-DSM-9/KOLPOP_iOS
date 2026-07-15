@@ -84,6 +84,7 @@ final class SignUpInfoViewController: UIViewController {
         setupActions()
         updateIDCheckButtonStyle()
         updateSignUpButtonStyle()
+        dismissKeyboardOnTap()
     }
 
     private func setupLayout() {

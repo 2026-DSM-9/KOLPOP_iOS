@@ -55,6 +55,7 @@ final class LoginViewController: UIViewController {
         setupLayout()
         setupActions()
         updateLoginButtonStyle()
+        dismissKeyboardOnTap()
     }
 
     private func setupLayout() {

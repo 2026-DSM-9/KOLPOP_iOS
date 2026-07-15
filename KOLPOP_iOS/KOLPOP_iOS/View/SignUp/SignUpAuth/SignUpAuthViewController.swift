@@ -58,6 +58,7 @@ final class SignUpAuthViewController: UIViewController {
         setupActions()
         updateSendCodeButtonStyle()
         updateNextButtonStyle()
+        dismissKeyboardOnTap()
     }
 
     private func setupLayout() {
