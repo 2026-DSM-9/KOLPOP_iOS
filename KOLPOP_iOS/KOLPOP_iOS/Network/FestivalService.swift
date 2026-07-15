@@ -29,4 +29,20 @@ final class FestivalService {
             }
         }
     }
+
+    func fetchUpcomingFestivals(limit: Int? = nil, completion: @escaping (Result<[Festival], Error>) -> Void) {
+        provider.request(.upcoming(limit: limit)) { result in
+            switch result {
+            case .success(let response):
+                do {
+                    let decoded = try JSONDecoder().decode(ApiResponse<[FestivalSummaryResponse]>.self, from: response.data)
+                    completion(.success((decoded.data ?? []).map(Festival.init(summary:))))
+                } catch {
+                    completion(.failure(error))
+                }
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
 }

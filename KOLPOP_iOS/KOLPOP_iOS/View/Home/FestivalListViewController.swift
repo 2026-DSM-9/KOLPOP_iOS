@@ -54,7 +54,7 @@ final class FestivalListViewController: UIViewController {
     }
 
     private func fetchFestivals(keyword: String? = nil) {
-        festivalService.fetchFestivals(keyword: keyword) { [weak self] result in
+        let completion: (Result<[Festival], Error>) -> Void = { [weak self] result in
             guard let self else { return }
             DispatchQueue.main.async {
                 switch result {
@@ -65,6 +65,14 @@ final class FestivalListViewController: UIViewController {
                     print("축제 정보 조회 실패: \(error)")
                 }
             }
+        }
+
+        // 검색어가 없을 때는 전체 목록(과거 데이터 포함) 대신 현재 진행 중/예정인 축제만
+        // 내려주는 /festivals/upcoming을 사용한다. 검색어가 있을 때만 전체 목록에서 키워드로 찾는다.
+        if let keyword, !keyword.isEmpty {
+            festivalService.fetchFestivals(keyword: keyword, completion: completion)
+        } else {
+            festivalService.fetchUpcomingFestivals(completion: completion)
         }
     }
 
