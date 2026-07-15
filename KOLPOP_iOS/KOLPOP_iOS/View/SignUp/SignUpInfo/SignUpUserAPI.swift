@@ -13,6 +13,7 @@ enum AuthAPI {
     case phoneNumber(phone: String)
     case phoneCheck(phone: String, code: String)
     case entrepreneurLogin(loginId: String, password: String)
+    case logout
 }
 
 extension AuthAPI: TargetType {
@@ -33,6 +34,8 @@ extension AuthAPI: TargetType {
             return "auth/verify"
         case .entrepreneurLogin:
             return "auth/entrepreneur/login"
+        case .logout:
+            return "auth/logout"
         }
     }
 
@@ -80,11 +83,18 @@ extension AuthAPI: TargetType {
                 "password": password
             ]
             return .requestParameters(parameters: params, encoding: JSONEncoding.default)
+
+        case .logout:
+            return .requestPlain
         }
     }
 
     var headers: [String: String]? {
-        ["Content-Type": "application/json"]
+        var headers = ["Content-Type": "application/json"]
+        if let accessToken = TokenStore.shared.accessToken {
+            headers["Authorization"] = "Bearer \(accessToken)"
+        }
+        return headers
     }
 }
 struct SignUpResponse: Codable {
@@ -230,6 +240,17 @@ final class AuthService {
                     completion(.failure(error))
                 }
 
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+
+    func logout(completion: @escaping (Result<Void, Error>) -> Void) {
+        provider.request(.logout) { result in
+            switch result {
+            case .success:
+                completion(.success(()))
             case .failure(let error):
                 completion(.failure(error))
             }
